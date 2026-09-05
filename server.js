@@ -28,7 +28,7 @@ loadDotEnv();
 
 const ROOT = __dirname;
 const PORT = Number(process.env.PORT || 3000);
-const HOST = process.env.HOST || '127.0.0.1';
+const HOST = process.env.HOST || '0.0.0.0';
 const API_KEY = String(process.env.GEMINI_API_KEY || '').trim();
 const MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30;

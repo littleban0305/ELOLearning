@@ -212,6 +212,30 @@ function normalizeRichAnswer(raw) {
 }
 
 const genai = API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
+const QUIZ_RESPONSE_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    questions: {
+      type: 'array',
+      minItems: 3,
+      maxItems: 10,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          question: { type: 'string' },
+          options: { type: 'array', minItems: 4, maxItems: 4, items: { type: 'string' } },
+          answer: { type: 'integer', minimum: 0, maximum: 3 },
+          explanation: { type: 'string' },
+        },
+        required: ['question', 'options', 'answer', 'explanation'],
+      },
+    },
+  },
+  required: ['questions'],
+};
+
 
 function normalizeAiError(error) {
   const message = String(error?.message || error || 'Gemini 請求失敗。');
@@ -227,7 +251,13 @@ async function askGemini(prompt, jsonMode = false) {
     const response = await genai.models.generateContent({
       model: MODEL,
       contents: prompt,
-      ...(jsonMode ? { config: { responseMimeType: 'application/json' } } : {}),
+      ...(jsonMode ? {
+        config: {
+          responseMimeType: 'application/json',
+          responseJsonSchema: QUIZ_RESPONSE_SCHEMA,
+          temperature: 0.6,
+        },
+      } : {}),
     });
     const text = String(response?.text || '').trim();
     if (!text) throw new Error('Gemini 回傳內容為空。');
@@ -271,8 +301,7 @@ function buildQuizPrompt({ notes, count, difficulty, subject }) {
 【學生筆記】
 ${notes}
 
-只輸出 JSON：
-{"questions":[{"question":"題目","options":["A","B","C","D"],"answer":0,"explanation":"答案解析"}]}
+請依照系統提供的 JSON Schema 回傳資料，不要輸出 Markdown、code fence 或額外說明。
 
 規則：
 - 每題四選一，answer 必須是 0、1、2、3。

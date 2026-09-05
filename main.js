@@ -1,4 +1,5 @@
 const $ = (s) => document.querySelector(s);
+const $$ = (s) => Array.from(document.querySelectorAll(s));
 
 const state = {
   screen: 'ask',
@@ -199,12 +200,42 @@ async function ask() {
   } catch(err) { els.result.innerHTML=`<div class="error-card"><strong>AI 沒有成功回覆。</strong><p>${escapeHtml(err.message)}</p></div>`; toast('這次 AI 請求失敗。','error'); }
   finally { setBusy(false); }
 }
-function execCommand(cmd,val=null){ els.editor.focus(); document.execCommand(cmd,false,val); saveCurrentNote(); }
-function insertNodeAtSelection(node) {
+let savedEditorRange = null;
+function saveEditorSelection(){
   const sel=window.getSelection();
-  if(!sel?.rangeCount || !els.editor.contains(sel.anchorNode)) { els.editor.appendChild(node); els.editor.focus(); return; }
-  const range=sel.getRangeAt(0); range.deleteContents(); range.insertNode(node); range.setStartAfter(node); range.collapse(true);
-  sel.removeAllRanges(); sel.addRange(range); els.editor.focus();
+  if(!sel?.rangeCount || !els.editor.contains(sel.anchorNode) || !els.editor.contains(sel.focusNode)) return;
+  savedEditorRange = sel.getRangeAt(0).cloneRange();
+}
+function restoreEditorSelection(){
+  if(!savedEditorRange) return false;
+  const sel=window.getSelection();
+  sel.removeAllRanges(); sel.addRange(savedEditorRange);
+  return true;
+}
+function execCommand(cmd,val=null){
+  els.editor.focus();
+  restoreEditorSelection();
+  document.execCommand(cmd,false,val);
+  saveCurrentNote(true);
+  saveEditorSelection();
+}
+function insertNodeAtSelection(node) {
+  els.editor.focus();
+  restoreEditorSelection();
+  const sel=window.getSelection();
+  if(!sel?.rangeCount || !els.editor.contains(sel.anchorNode)) {
+    els.editor.appendChild(node);
+    const range=document.createRange(); range.selectNodeContents(node); range.collapse(false);
+    sel.removeAllRanges(); sel.addRange(range);
+    saveCurrentNote(true);
+    saveEditorSelection();
+    return;
+  }
+  const range=sel.getRangeAt(0);
+  range.deleteContents(); range.insertNode(node); range.setStartAfter(node); range.collapse(true);
+  sel.removeAllRanges(); sel.addRange(range);
+  saveCurrentNote(true);
+  saveEditorSelection();
 }
 function insertTable(rows=3,cols=3){
   const table=document.createElement('table'),thead=document.createElement('thead'),tr=document.createElement('tr');
@@ -305,7 +336,10 @@ $('#deleteNoteBtn').onclick=deleteCurrentNote;
 $('#downloadWordBtn').onclick=downloadWord;
 $('#downloadPdfBtn').onclick=downloadPdf;
 els.titleInput.oninput=()=>saveCurrentNote();
-els.editor.oninput=()=>saveCurrentNote();
+els.editor.oninput=()=>{ saveEditorSelection(); saveCurrentNote(); };
+els.editor.addEventListener('keyup',saveEditorSelection);
+els.editor.addEventListener('mouseup',saveEditorSelection);
+$$('.editor-toolbar button').forEach(btn=>btn.addEventListener('mousedown',(e)=>{e.preventDefault();saveEditorSelection();}));
 $$('.editor-toolbar [data-cmd]').forEach(btn=>btn.onclick=()=>execCommand(btn.dataset.cmd));
 $('#formatBlock').onchange=(e)=>execCommand('formatBlock',e.target.value);
 $('#insertTableBtn').onclick=()=>insertTable();

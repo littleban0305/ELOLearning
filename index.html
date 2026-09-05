@@ -7,12 +7,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
 </head>
 <body>
 <div id="authGate" class="auth-gate">
   <div class="auth-card panel">
-    <div class="auth-brand"><div id="authLottie" class="lottie-auth" aria-hidden="true"></div><div><strong>ELOLearning</strong><small>AI 學習助手</small></div></div>
+    <div class="auth-brand">
+  <div class="css-logo css-logo-sm" aria-hidden="true"><span class="css-logo-e">E</span><i></i><i></i><i></i></div>
+  <div><strong>ELOLearning</strong><small>AI 學習助手</small></div>
+</div>
     <div class="auth-tabs"><button id="loginTab" class="auth-tab active">登入</button><button id="registerTab" class="auth-tab">註冊</button></div>
     <form id="authForm">
       <label id="nameWrap" class="auth-field" hidden>名稱<input id="nameInput" autocomplete="name" maxlength="60" placeholder="你的名稱"></label>
@@ -43,7 +45,23 @@
 
 <section class="content">
 <section id="askPanel">
-<div class="hero"><div><span class="eyebrow">AI LEARNING</span><h1>問 AI，<span>整理並留下重點。</span></h1><p>可要求表格、粗體、斜體、清單等格式；回答會自動保存。</p></div><div id="heroLottie" class="lottie-hero" aria-hidden="true"></div></div>
+<div class="hero">
+  <div class="hero-copy">
+    <span class="eyebrow">AI LEARNING</span>
+    <h1>問 AI，<span>整理並留下重點。</span></h1>
+    <p>直接問問題，AI 會整理成好讀的內容並自動保存到你的重點。</p>
+    <div class="hero-features"><span>✦ AI 解答</span><span>▤ 自動整理</span><span>⌁ 雲端保存</span></div>
+  </div>
+  <div class="hero-visual" aria-hidden="true">
+    <div class="hero-glow"></div>
+    <div class="orbit orbit-a"></div>
+    <div class="orbit orbit-b"></div>
+    <div class="hero-logo css-logo css-logo-lg"><span class="css-logo-e">E</span><i></i><i></i><i></i></div>
+    <div class="float-chip chip-one">AI</div>
+    <div class="float-chip chip-two">✦</div>
+    <div class="float-chip chip-three">學習</div>
+  </div>
+</div>
 <div class="panel ask-panel">
 <div class="panel-head"><div><span class="eyebrow">ASK</span><h2>你想學什麼？</h2><p>直接描述你要學的內容與格式。</p></div></div>
 <div class="selectors">
@@ -56,13 +74,19 @@
 <div class="format-hints"><button type="button" data-prompt="請整理成表格">表格</button><button type="button" data-prompt="重要名詞請使用粗體，補充內容使用斜體">粗體＋斜體</button><button type="button" data-prompt="請用條列式整理">條列</button><button type="button" data-prompt="請分成「定義／例子／容易搞混」">分段</button></div>
 <div class="ask-footer"><span class="hint">Ctrl / Cmd + Enter 送出</span><button id="askBtn" class="primary-btn">詢問 AI ↗</button></div>
 </div>
-<div id="loading" class="loading" hidden><div id="loadingLottie" class="lottie-loading" aria-hidden="true"></div><div><strong>AI 正在處理…</strong><span id="loadingSub">完成後自動保存。</span></div></div>
+<div id="loading" class="loading" hidden>
+  <div class="loading-orb" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div><strong>AI 正在處理…</strong><span id="loadingSub">完成後自動保存。</span></div>
+</div>
 <section id="resultBox" class="panel result-panel" hidden><div class="panel-head"><div><span class="eyebrow">AI RESULT</span><h2>這次學到的內容</h2></div><div class="result-actions"><span class="saved-tag">✓ 已同步</span><button id="editCurrentBtn" class="ghost-btn">在我的重點編輯</button></div></div><article id="result" class="rich-content"></article></section>
 </section>
 
 <section id="notesPanel" class="panel page-panel" hidden>
 <div class="panel-head"><div><span class="eyebrow">MEMORY</span><h2>我的重點</h2><p>編輯內容會自動同步。</p></div><div class="notes-toolbar-actions"><button id="newNoteBtn" class="ghost-btn">＋ 新筆記</button><button id="clearAll" class="danger-btn">清空全部</button></div></div>
-<div class="notes-layout"><div class="notes-list"><div id="emptyNotes" class="empty"><div id="emptyNotesLottie" class="lottie-empty" aria-hidden="true"></div><h3>還沒有重點</h3><p>先問一次 AI。</p></div><div id="history"></div></div>
+<div class="notes-layout"><div class="notes-list"><div id="emptyNotes" class="empty">
+  <div class="empty-illustration" aria-hidden="true"><div class="empty-book"></div><div class="empty-spark spark-a">✦</div><div class="empty-spark spark-b">•</div></div>
+  <h3>還沒有重點</h3><p>先問一次 AI，第一份重點就會自動出現在這裡。</p>
+</div><div id="history"></div></div>
 <div id="noteEditorArea" class="note-editor-area" hidden><div class="editor-header"><div><span class="eyebrow">EDITOR</span><input id="noteTitleInput" class="note-title-input" placeholder="筆記標題"><div id="noteMeta" class="note-meta"></div></div><span id="saveIndicator" class="save-indicator">已同步</span></div>
 <div class="editor-toolbar"><button type="button" data-cmd="bold" title="粗體"><strong>B</strong></button><button type="button" data-cmd="italic" title="斜體"><em>I</em></button><button type="button" data-cmd="underline" title="底線"><u>U</u></button><button type="button" data-cmd="strikeThrough" title="刪除線"><s>S</s></button><span class="toolbar-sep"></span><select id="formatBlock"><option value="p">本文</option><option value="h2">大標題</option><option value="h3">小標題</option><option value="blockquote">引用</option><option value="pre">程式碼</option></select><button type="button" data-cmd="insertUnorderedList">• 清單</button><button type="button" data-cmd="insertOrderedList">1. 清單</button><span class="toolbar-sep"></span><button type="button" id="insertTableBtn">▦ 表格</button><button type="button" data-cmd="undo">↶</button><button type="button" data-cmd="redo">↷</button></div>
 <article id="noteEditor" class="rich-editor" contenteditable="true" spellcheck="true"></article>

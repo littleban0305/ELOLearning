@@ -317,54 +317,6 @@ async function bootstrap(){
 }
 
 
-let lottieAnimations = [];
-const lottieMounted = new Set();
-
-function mountLottie(id, path, loop = true) {
-  const el = document.getElementById(id);
-  if (!el || !window.lottie || lottieMounted.has(id)) return;
-  lottieMounted.add(id);
-  el.classList.remove('lottie-failed', 'lottie-ready');
-  el.classList.add('lottie-loading');
-
-  try {
-    const animation = window.lottie.loadAnimation({
-      container: el,
-      renderer: 'svg',
-      loop,
-      autoplay: true,
-      path,
-      rendererSettings: { progressiveLoad: true, preserveAspectRatio: 'xMidYMid meet' },
-    });
-
-    animation.addEventListener('DOMLoaded', () => {
-      el.classList.remove('lottie-loading', 'lottie-failed');
-      el.classList.add('lottie-ready');
-    });
-
-    animation.addEventListener('data_failed', () => {
-      el.classList.remove('lottie-loading', 'lottie-ready');
-      el.classList.add('lottie-failed');
-    });
-
-    lottieAnimations.push(animation);
-  } catch {
-    el.classList.remove('lottie-loading', 'lottie-ready');
-    el.classList.add('lottie-failed');
-  }
-}
-
-function initLottie() {
-  mountLottie('authLottie', 'assets/auth.json');
-  mountLottie('heroLottie', 'assets/hero.json');
-  mountLottie('loadingLottie', 'assets/loading.json');
-  mountLottie('emptyNotesLottie', 'assets/empty.json');
-}
-
-function ensureLottie() {
-  if (window.lottie) initLottie();
-}
-
 function bindEvents() {
   // 事件委派：靜態、動態產生的按鈕都走同一條路，避免後續 render 後事件失效。
   document.addEventListener('click', async (event) => {
@@ -543,8 +495,4 @@ function refreshDynamicIds() {
 }
 
 bindEvents();
-ensureLottie();
-window.addEventListener('load', ensureLottie, { once: true });
-setTimeout(ensureLottie, 500);
-
 bootstrap();

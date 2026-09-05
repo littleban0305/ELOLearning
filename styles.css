@@ -206,7 +206,7 @@ a{color:inherit}
 .hero-glow{position:absolute;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(143,146,255,.34),rgba(143,146,255,0) 70%);filter:blur(8px);animation:heroGlow 3.8s ease-in-out infinite}
 .orbit{position:absolute;border:1px solid rgba(150,165,255,.17);border-radius:50%;transform:rotate(-16deg);animation:orbitSpin 12s linear infinite}
 .orbit-a{width:210px;height:210px}.orbit-b{width:285px;height:128px;border-color:rgba(99,215,255,.12);animation-duration:15s;animation-direction:reverse}
-.hero-logo{position:relative;z-index:2;animation:logoFloat 4.5s ease-in-out infinite}
+.hero-logo{position:relative;z-index:2;animation:logoFloat 4.5s ease-in-out infinite;background: transparent;box-shadow: none;overflow: hidden;}
 .float-chip{position:absolute;z-index:3;padding:8px 11px;border:1px solid rgba(255,255,255,.09);border-radius:12px;color:#dbe1f1;background:rgba(12,19,34,.82);box-shadow:0 12px 28px rgba(0,0,0,.25);font-size:10px;font-weight:850;backdrop-filter:blur(10px);animation:chipFloat 4s ease-in-out infinite}
 .chip-one{top:27%;right:13%;animation-delay:-1.6s}.chip-two{left:13%;top:45%;animation-delay:-.4s}.chip-three{bottom:17%;right:20%;animation-delay:-2.5s}
 
@@ -325,10 +325,9 @@ textarea{min-height:158px;padding:15px;resize:vertical;line-height:1.8}
   height: 48px;
   border-radius: 14px;
   overflow: hidden;
+  background: transparent;
+  box-shadow: none;
   flex: 0 0 48px;
-  box-shadow:
-    0 0 24px rgba(125, 102, 255, 0.28),
-    0 8px 28px rgba(0, 0, 0, 0.28);
 }
 
 .brand-mark img {
@@ -339,18 +338,17 @@ textarea{min-height:158px;padding:15px;resize:vertical;line-height:1.8}
 }
 
 .login-logo {
-  width: 110px;
-  height: 110px;
-  margin: 0 auto 24px;
-  border-radius: 30px;
+  width: 96px;
+  height: 96px;
+  border-radius: 24px;
   overflow: hidden;
-  box-shadow:
-    0 0 50px rgba(125, 102, 255, 0.35),
-    0 20px 50px rgba(0, 0, 0, 0.35);
+  background: transparent;
+  box-shadow: none;
 }
 
 .login-logo img {
   width: 100%;
   height: 100%;
+  display: block;
   object-fit: cover;
 }

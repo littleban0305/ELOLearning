@@ -1,3 +1,5 @@
-key.local.js
 node_modules/
 .env
+key.local.js
+npm-debug.log*
+.DS_Store

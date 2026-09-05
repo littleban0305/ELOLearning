@@ -1,0 +1,13 @@
+{
+  "name": "elolearning",
+  "version": "0.1.0",
+  "private": true,
+  "description": "國中一年級康軒國文 Gemini 3.6 Flash 學習原型",
+  "scripts": {
+    "start:summary": "node index.js summary",
+    "start:quiz": "node index.js quiz"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

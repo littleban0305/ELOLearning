@@ -1,2 +1,29 @@
 # ELOLearning
-ELOLearning is a very great learning website.
+
+最小可執行版本（Node.js CLI）：
+
+- 使用 `gemini-3.6-flash` 產生內容
+- 使用 Gemini 的 Google Search 工具做網路資料搜尋
+- 支援兩種輸出模式：
+  - `summary`：重點整理
+  - `quiz`：題目複習
+- 目前固定主題為「國中一年級康軒國文」
+
+## 1) 設定 API Key
+
+編輯 `key.js`，把你的 key 貼上去：
+
+```js
+module.exports = {
+  GEMINI_API_KEY: "貼上你的 Gemini API Key",
+};
+```
+
+## 2) 執行
+
+```bash
+node index.js summary 岳陽樓記
+node index.js quiz  論語選
+```
+
+如果沒有提供主題，預設會用「國文課文重點」。

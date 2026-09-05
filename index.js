@@ -8,8 +8,8 @@ if (!["summary", "quiz"].includes(mode)) {
   process.exit(1);
 }
 
-if (!GEMINI_API_KEY || GEMINI_API_KEY.includes("PASTE_YOUR_GEMINI_API_KEY_HERE")) {
-  console.error("請先到 key.js 設定 GEMINI_API_KEY");
+if (!GEMINI_API_KEY) {
+  console.error("請先設定 GEMINI_API_KEY（環境變數或 key.local.js）");
   process.exit(1);
 }
 
@@ -64,12 +64,13 @@ ${formatInstruction}`;
 
 async function run() {
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(
-      GEMINI_API_KEY
-    )}`,
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent",
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": GEMINI_API_KEY,
+      },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         tools: [{ google_search: {} }],

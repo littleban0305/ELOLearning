@@ -8,6 +8,6 @@
     "start:quiz": "node index.js quiz"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   }
 }

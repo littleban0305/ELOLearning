@@ -11,7 +11,13 @@
 
 ## 1) 設定 API Key
 
-編輯 `key.js`，把你的 key 貼上去：
+請先設定環境變數（推薦）：
+
+```bash
+export GEMINI_API_KEY="貼上你的 Gemini API Key"
+```
+
+或建立本機檔案 `key.local.js`（不會進版控）：
 
 ```js
 module.exports = {

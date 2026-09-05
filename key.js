@@ -1,3 +1,13 @@
+let localKey = "";
+
+try {
+  localKey = require("./key.local").GEMINI_API_KEY || "";
+} catch (err) {
+  if (err.code !== "MODULE_NOT_FOUND") {
+    throw err;
+  }
+}
+
 module.exports = {
-  GEMINI_API_KEY: "PASTE_YOUR_GEMINI_API_KEY_HERE",
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY || localKey,
 };

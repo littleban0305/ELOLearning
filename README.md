@@ -7,7 +7,7 @@
 - 支援兩種輸出模式：
   - `summary`：重點整理
   - `quiz`：題目複習
-- 目前固定主題為「國中一年級康軒國文」
+- 固定年級版本為「國中一年級康軒國文」，主題可用命令列參數指定
 
 ## 1) 設定 API Key
 
@@ -29,7 +29,7 @@ module.exports = {
 
 ```bash
 node index.js summary 岳陽樓記
-node index.js quiz  論語選
+node index.js quiz 論語選
 ```
 
-如果沒有提供主題，預設會用「國文課文重點」。
+主題可選填；如果沒有提供主題，預設會用「國文課文重點」。

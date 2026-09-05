@@ -5,6 +5,10 @@ const topic = process.argv[3] || "國文課文重點";
 const primaryModel = process.env.GEMINI_MODEL || "gemini-3.6-flash";
 const fallbackModel = "gemini-2.5-flash";
 
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 if (!["summary", "quiz"].includes(mode)) {
   console.error("mode 只能是 summary 或 quiz");
   process.exit(1);
@@ -83,12 +87,16 @@ async function run() {
 
   if (!response.ok && primaryModel !== fallbackModel) {
     const errText = await response.text();
+    let errMessage = errText;
+
+    try {
+      const errJson = JSON.parse(errText);
+      errMessage = errJson?.error?.message || errText;
+    } catch {}
+
     const mayBeModelIssue =
-      response.status === 404 ||
-      ((response.status === 400 || response.status === 403) &&
-        /(unsupported model|model .*not found|is not found for api version|not available for this model)/i.test(
-          errText
-        ));
+      /(unsupported model|not available for this model|is not found for api version)/i.test(errMessage) ||
+      new RegExp(`models\\/${escapeRegex(primaryModel)}.*not found`, "i").test(errMessage);
 
     if (mayBeModelIssue) {
       response = await generateWithModel(fallbackModel);

@@ -229,13 +229,28 @@ a{color:inherit}
 .chip-one{top:27%;right:13%;animation-delay:-1.6s}.chip-two{left:13%;top:45%;animation-delay:-.4s}.chip-three{bottom:17%;right:20%;animation-delay:-2.5s}
 
 /* ===== pure CSS logo ===== */
-.css-logo{position:relative;display:grid;place-items:center;border-radius:24%;color:#fff;background:linear-gradient(145deg,#8d91ff,#b190ff);box-shadow:0 22px 45px rgba(129,134,255,.27);overflow:hidden}
+.css-logo{
+  position:relative;
+  display:grid;
+  place-items:center;
+  border-radius:24%;
+  color:#fff;
+  background:transparent;
+  box-shadow:none;
+  overflow:hidden;
+}
 .css-logo::before{content:"";position:absolute;inset:9%;border:1px solid rgba(255,255,255,.26);border-radius:20%;opacity:.55}
 .css-logo::after{content:"";position:absolute;width:170%;height:26%;background:rgba(255,255,255,.22);transform:translateX(-80%) rotate(-24deg);animation:logoSweep 4.6s ease-in-out infinite}
 .css-logo-e{position:relative;z-index:2;font-weight:950;line-height:1}
 .css-logo i{position:absolute;z-index:2;left:27%;height:4px;border-radius:99px;background:rgba(255,255,255,.92);box-shadow:0 0 12px rgba(255,255,255,.12)}
 .css-logo i:nth-of-type(1){top:33%;width:46%}.css-logo i:nth-of-type(2){top:50%;width:34%}.css-logo i:nth-of-type(3){top:67%;width:24%}
-.css-logo-sm{width:48px;height:48px;border-radius:15px}.css-logo-sm .css-logo-e{font-size:21px}.css-logo-sm i{height:3px}.css-logo-lg{width:124px;height:124px;border-radius:31px;box-shadow:0 25px 55px rgba(129,134,255,.32)}.css-logo-lg .css-logo-e{font-size:50px}.css-logo-lg i{height:6px}
+.css-logo-sm{width:48px;height:48px;border-radius:15px}.css-logo-sm .css-logo-e{font-size:21px}.css-logo-sm i{height:3px}
+.css-logo-lg{
+  width:124px;
+  height:124px;
+  border-radius:31px;
+  box-shadow:none;
+}.css-logo-lg .css-logo-e{font-size:50px}.css-logo-lg i{height:6px}
 
 /* ===== ask ===== */
 .ask-panel{max-width:var(--content);margin:0 auto;padding:31px}

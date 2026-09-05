@@ -148,3 +148,19 @@ footer{max-width:1500px;margin:0 auto;padding:0 42px 35px;color:#4e5a72;font-siz
 @media (max-width:620px){
   .topbar{padding:0 14px}.account #userName{display:none}.content{padding:24px 13px 50px}.ask-panel,.page-panel,.result-panel{padding:18px}.selectors{grid-template-columns:1fr}.editor-toolbar{top:72px}.rich-editor{min-height:400px;padding:18px}.editor-bottom{align-items:flex-start;flex-direction:column}.editor-bottom>div{width:100%}.editor-bottom button{flex:1}.quiz-settings{grid-template-columns:1fr}.quiz-settings .quiz-scope-label,.quiz-settings .primary-btn{grid-column:auto}.options{grid-template-columns:1fr}.auth-card{padding:24px}
 }
+
+/* Lottie + simplified navigation */
+.lottie-auth{width:42px;height:42px;flex:0 0 42px}
+.lottie-hero{width:96px;height:96px;opacity:.9;flex:0 0 96px}
+.lottie-loading{width:54px;height:54px;flex:0 0 54px}
+.lottie-empty{width:110px;height:110px;margin:0 auto 4px}
+.auth-brand{display:flex;align-items:center;gap:10px}
+.nav-btn{gap:12px}
+.nav-icon{width:24px;min-width:24px;text-align:center}
+.nav-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
+.nav-copy strong{font-size:13px;font-weight:800;color:inherit}
+.nav-copy small{font-size:10px;color:var(--muted);font-weight:500;white-space:nowrap}
+.nav-btn:hover .nav-copy small,.nav-btn.active .nav-copy small{color:#9ca8c7}
+.nav-btn b{margin:0;font-size:10px}
+.hero{align-items:center}
+@media (max-width:900px){.lottie-hero{display:none}.nav-copy small{display:none}.nav-btn{gap:8px}}

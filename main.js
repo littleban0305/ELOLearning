@@ -317,6 +317,24 @@ async function bootstrap(){
 }
 
 
+let lottieAnimations = [];
+function mountLottie(id, loop = true) {
+  const el = document.getElementById(id);
+  if (!el || !window.lottie) return;
+  try {
+    const animation = window.lottie.loadAnimation({
+      container: el, renderer: 'svg', loop, autoplay: true, path: 'assets/pulse.json',
+    });
+    lottieAnimations.push(animation);
+  } catch {}
+}
+function initLottie() {
+  mountLottie('authLottie');
+  mountLottie('heroLottie');
+  mountLottie('loadingLottie');
+  mountLottie('emptyNotesLottie');
+}
+
 function bindEvents() {
   // 事件委派：靜態、動態產生的按鈕都走同一條路，避免後續 render 後事件失效。
   document.addEventListener('click', async (event) => {
@@ -495,5 +513,6 @@ function refreshDynamicIds() {
 }
 
 bindEvents();
+initLottie();
 
 bootstrap();

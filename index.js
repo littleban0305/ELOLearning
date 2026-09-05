@@ -88,15 +88,20 @@ async function run() {
   if (!response.ok && primaryModel !== fallbackModel) {
     const errText = await response.text();
     let errMessage = errText;
+    let apiErrorStatus = "";
 
     try {
       const errJson = JSON.parse(errText);
       errMessage = errJson?.error?.message || errText;
+      apiErrorStatus = errJson?.error?.status || "";
     } catch {}
 
     const mayBeModelIssue =
-      /(unsupported model|not available for this model|is not found for api version)/i.test(errMessage) ||
-      new RegExp(`models\\/${escapeRegex(primaryModel)}.*not found`, "i").test(errMessage);
+      (response.status === 400 || response.status === 404) &&
+      (!apiErrorStatus ||
+        ["INVALID_ARGUMENT", "NOT_FOUND", "FAILED_PRECONDITION"].includes(apiErrorStatus)) &&
+      (/(unsupported model|not available for this model|is not found for api version)/i.test(errMessage) ||
+        new RegExp(`models\\/${escapeRegex(primaryModel)}.*not found`, "i").test(errMessage));
 
     if (mayBeModelIssue) {
       response = await generateWithModel(fallbackModel);

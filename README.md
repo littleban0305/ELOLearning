@@ -2,7 +2,7 @@
 
 最小可執行版本（Node.js CLI）：
 
-- 預設先用 `gemini-3.6-flash`；若 API 尚未開通該模型，會自動退回 `gemini-2.5-flash`
+- 程式會先使用主要模型做搜尋生成；若 API 回覆該模型不可用，會自動退回備援模型
 - 使用 Gemini 的 Google Search 工具做網路資料搜尋
 - 支援兩種輸出模式：
   - `summary`：重點整理

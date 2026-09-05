@@ -106,3 +106,9 @@ AI：
 
 - `DELETE /api/questions/:id`
 - `POST /api/questions/:id/score`
+
+
+## 本版前端事件系統
+網站採用事件委派處理導覽、動態筆記卡片、我的題目與富文字工具列。
+因此即使重新渲染筆記或題目清單，按鈕也不會因為 DOM 被替換而失效。
+編輯器工具列會保存文字選取範圍，不再用 `mousedown.preventDefault()` 阻止原生按鈕行為。

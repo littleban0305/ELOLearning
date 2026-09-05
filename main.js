@@ -24,7 +24,7 @@ const els = {
   askBtn: $('#askBtn'), result: $('#result'), resultBox: $('#resultBox'), loading: $('#loading'),
   history: $('#history'), emptyNotes: $('#emptyNotes'), notesCount: $('#notesCount'), questionsCount: $('#questionsCount'),
   editorArea: $('#noteEditorArea'), editor: $('#noteEditor'), titleInput: $('#noteTitleInput'), noteMeta: $('#noteMeta'),
-  saveIndicator: $('#saveIndicator'), quizBox: $('#quizBox'), quizCount: $('#quizCount'), difficulty: $('#difficultySelect'),
+  saveIndicator: $('#saveIndicator'), formatBlock: $('#formatBlock'), quizBox: $('#quizBox'), quizCount: $('#quizCount'), difficulty: $('#difficultySelect'),
   quizScope: $('#quizScope'), quizBtn: $('#quizBtn'), questionsList: $('#questionsList'), toast: $('#toast'),
 };
 
@@ -157,10 +157,10 @@ function renderHistory() {
   if(!state.notes.length){ els.emptyNotes.hidden=false; els.editorArea.hidden=true; return; }
   els.emptyNotes.hidden=true;
   [...state.notes].sort((a,b)=>new Date(b.updatedAt)-new Date(a.updatedAt)).forEach(note=>{
-    const card=document.createElement('button'); card.className=`history-card ${note.id===state.currentNoteId?'selected':''}`;
+    const card=document.createElement('button'); card.className=`history-card ${note.id===state.currentNoteId?'selected':''}`; card.dataset.noteId=note.id;
     const plain=htmlToPlainText(note.html);
     card.innerHTML=`<span>${escapeHtml(note.title)}</span><small>${escapeHtml(note.subject)} · ${new Date(note.updatedAt).toLocaleString()}</small><p>${escapeHtml(plain.slice(0,120))}${plain.length>120?'…':''}</p>`;
-    card.onclick=()=>openNote(note.id); els.history.appendChild(card);
+    els.history.appendChild(card);
   });
 }
 function openNote(id) {
@@ -287,7 +287,6 @@ function renderQuiz(quiz,setId){
     card.innerHTML=`<div class="quiz-q"><b>${qi+1}</b><span>${escapeHtml(q.question)}</span></div><div class="options">${q.options.map((o,oi)=>`<label><input type="radio" name="q${qi}" value="${oi}"><span>${escapeHtml(o)}</span></label>`).join('')}</div><div class="explanation" id="exp${qi}" hidden>${escapeHtml(q.explanation||'')}</div>`;
     list.appendChild(card);
   });
-  $('#submitQuiz').onclick=submitQuiz;
 }
 async function submitQuiz(){
   const quiz=state.currentQuiz;if(!quiz||quiz.submitted)return;
@@ -300,10 +299,8 @@ function renderQuestions(){
   els.questionsList.innerHTML='';
   if(!state.questionSets.length){els.questionsList.innerHTML='<div class="empty"><div>☷</div><h3>還沒有保存的題目</h3><p>到「開始出題」讓 AI 根據你的重點產生第一份練習。</p></div>';return;}
   [...state.questionSets].forEach(set=>{
-    const card=document.createElement('article');card.className='saved-question-card';
+    const card=document.createElement('article');card.className='saved-question-card'; card.dataset.questionId=set.id;
     card.innerHTML=`<div class="saved-question-main"><span class="eyebrow">SAVED QUIZ</span><h3>${escapeHtml(set.title)}</h3><p>${escapeHtml(set.subject)} · ${escapeHtml(set.difficulty)} · ${set.count} 題 · ${new Date(set.createdAt).toLocaleString()}</p>${set.lastScore!==null&&set.lastScore!==undefined?`<span class="saved-score">上次 ${set.lastScore} / ${set.count}</span>`:''}</div><div class="saved-question-actions"><button class="ghost-btn do-open">重新作答</button><button class="danger-btn do-delete">刪除</button></div>`;
-    card.querySelector('.do-open').onclick=()=>{showScreen('quiz');renderQuiz({questions:set.questions},set.id);};
-    card.querySelector('.do-delete').onclick=async()=>{if(!confirm(`刪除「${set.title}」？`))return;try{await api(`/api/questions/${encodeURIComponent(set.id)}`,{method:'DELETE'});state.questionSets=state.questionSets.filter(x=>x.id!==set.id);renderQuestions();updateCounts();toast('題目已刪除。','success');}catch(e){toast(e.message,'error');}};
     els.questionsList.appendChild(card);
   });
 }
@@ -319,31 +316,184 @@ async function bootstrap(){
   }catch{els.authGate.hidden=false;els.appShell.hidden=true;}
 }
 
-els.loginTab.onclick=()=>setAuthMode('login');
-els.registerTab.onclick=()=>setAuthMode('register');
-els.authForm.onsubmit=submitAuth;
-els.logoutBtn.onclick=logout;
-els.navAsk.onclick=()=>showScreen('ask');
-els.navNotes.onclick=()=>showScreen('notes');
-els.navQuestions.onclick=()=>showScreen('questions');
-els.navQuiz.onclick=()=>showScreen('quiz');
-els.askBtn.onclick=ask;
-els.quizBtn.onclick=makeQuiz;
-els.editCurrentBtn.onclick=()=>state.currentNoteId?(showScreen('notes'),openNote(state.currentNoteId)):showScreen('notes');
-$('#newNoteBtn').onclick=async()=>{try{const r=await api('/api/notes',{method:'POST',body:{title:'新筆記',topic:'新筆記',subject:'其他',grade:'',html:'<h2>新筆記</h2><p>開始記錄你的學習內容。</p>'}});state.notes.unshift(r.note);state.currentNoteId=r.note.id;updateQuizScope();updateCounts();showScreen('notes');openNote(r.note.id);toast('新筆記已建立。','success');}catch(e){toast(e.message,'error');}};
-$('#clearAll').onclick=clearNotes;
-$('#deleteNoteBtn').onclick=deleteCurrentNote;
-$('#downloadWordBtn').onclick=downloadWord;
-$('#downloadPdfBtn').onclick=downloadPdf;
-els.titleInput.oninput=()=>saveCurrentNote();
-els.editor.oninput=()=>{ saveEditorSelection(); saveCurrentNote(); };
-els.editor.addEventListener('keyup',saveEditorSelection);
-els.editor.addEventListener('mouseup',saveEditorSelection);
-$$('.editor-toolbar button').forEach(btn=>btn.addEventListener('mousedown',(e)=>{e.preventDefault();saveEditorSelection();}));
-$$('.editor-toolbar [data-cmd]').forEach(btn=>btn.onclick=()=>execCommand(btn.dataset.cmd));
-$('#formatBlock').onchange=(e)=>execCommand('formatBlock',e.target.value);
-$('#insertTableBtn').onclick=()=>insertTable();
-$$('.format-hints button').forEach(b=>b.onclick=()=>{els.question.value=els.question.value?`${els.question.value}\n${b.dataset.prompt}`:b.dataset.prompt;els.question.focus();});
-els.question.addEventListener('keydown',(e)=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')ask();});
+
+function bindEvents() {
+  // 事件委派：靜態、動態產生的按鈕都走同一條路，避免後續 render 後事件失效。
+  document.addEventListener('click', async (event) => {
+    const target = event.target;
+    const btn = target.closest('button, [role="button"]');
+    if (!btn) return;
+
+    // 登入 / 註冊
+    if (btn.id === 'loginTab') return setAuthMode('login');
+    if (btn.id === 'registerTab') return setAuthMode('register');
+
+    // 主導覽
+    if (btn.id === 'navAsk') return showScreen('ask');
+    if (btn.id === 'navNotes') return showScreen('notes');
+    if (btn.id === 'navQuestions') return showScreen('questions');
+    if (btn.id === 'navQuiz') return showScreen('quiz');
+
+    // 一般操作
+    if (btn.id === 'logoutBtn') return logout();
+    if (btn.id === 'askBtn') return ask();
+    if (btn.id === 'quizBtn') return makeQuiz();
+    if (btn.id === 'editCurrentBtn') {
+      if (state.currentNoteId) {
+        showScreen('notes');
+        openNote(state.currentNoteId);
+      } else showScreen('notes');
+      return;
+    }
+    if (btn.id === 'newNoteBtn') return createBlankNote();
+    if (btn.id === 'clearAll') return clearNotes();
+    if (btn.id === 'deleteNoteBtn') return deleteCurrentNote();
+    if (btn.id === 'downloadWordBtn') return downloadWord();
+    if (btn.id === 'downloadPdfBtn') return downloadPdf();
+    if (btn.id === 'insertTableBtn') return insertTable();
+
+    // 首頁快速格式提示
+    if (btn.classList.contains('format-hint') || btn.closest('.format-hints')) {
+      const prompt = btn.dataset.prompt;
+      if (prompt) {
+        els.question.value = els.question.value
+          ? `${els.question.value}\n${prompt}`
+          : prompt;
+        els.question.focus();
+      }
+      return;
+    }
+
+    // 富文字工具列
+    const editorButton = btn.closest('.editor-toolbar') && btn;
+    if (editorButton?.dataset?.cmd) {
+      execCommand(editorButton.dataset.cmd);
+      return;
+    }
+
+    // 我的重點清單
+    const historyCard = btn.closest('#history .history-card');
+    if (historyCard) {
+      const id = historyCard.dataset.noteId;
+      if (id) openNote(id);
+      return;
+    }
+
+    // 我的題目操作
+    const questionCard = btn.closest('.saved-question-card');
+    if (questionCard) {
+      const id = questionCard.dataset.questionId;
+      if (btn.classList.contains('do-open')) {
+        const set = state.questionSets.find((item) => item.id === id);
+        if (set) {
+          showScreen('quiz');
+          renderQuiz({ questions: set.questions }, set.id);
+        }
+        return;
+      }
+      if (btn.classList.contains('do-delete')) {
+        return deleteQuestionSet(id);
+      }
+    }
+
+    // 動態產生的交卷按鈕
+    if (btn.id === 'submitQuiz') return submitQuiz();
+  });
+
+  // 表單提交
+  els.authForm.addEventListener('submit', submitAuth);
+
+  // 鍵盤快捷鍵
+  els.question.addEventListener('keydown', (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+      event.preventDefault();
+      ask();
+    }
+  });
+
+  // 編輯器：只保存選取，不阻止原生 click，避免按鈕「看得到但按不到」。
+  els.editor.addEventListener('input', () => {
+    saveEditorSelection();
+    saveCurrentNote();
+  });
+  ['keyup', 'mouseup', 'focus'].forEach((type) => {
+    els.editor.addEventListener(type, saveEditorSelection);
+  });
+
+  document.addEventListener('pointerdown', (event) => {
+    const button = event.target.closest('.editor-toolbar button');
+    if (button && els.editor.contains(document.activeElement)) {
+      saveEditorSelection();
+    }
+  });
+
+  // 格式區塊選單
+  els.formatBlock.addEventListener('change', (event) => {
+    if (!event.target.value) return;
+    execCommand('formatBlock', event.target.value);
+  });
+
+  // 筆記標題
+  els.titleInput.addEventListener('input', () => saveCurrentNote());
+
+  // 防止 brand 的 # 把畫面跳回最頂端
+  document.querySelector('.brand')?.addEventListener('click', (event) => {
+    event.preventDefault();
+    showScreen('ask');
+  });
+
+  // 點空白處時不做任何額外處理
+}
+
+async function createBlankNote() {
+  try {
+    const r = await api('/api/notes', {
+      method: 'POST',
+      body: {
+        title: '新筆記',
+        topic: '新筆記',
+        subject: '其他',
+        grade: '',
+        html: '<h2>新筆記</h2><p>開始記錄你的學習內容。</p>',
+      },
+    });
+    state.notes.unshift(r.note);
+    state.currentNoteId = r.note.id;
+    updateQuizScope();
+    updateCounts();
+    renderHistory();
+    showScreen('notes');
+    openNote(r.note.id);
+    toast('新筆記已建立。', 'success');
+  } catch (error) {
+    toast(error.message, 'error');
+  }
+}
+
+async function deleteQuestionSet(id) {
+  const set = state.questionSets.find((item) => item.id === id);
+  if (!set) return;
+  if (!confirm(`刪除「${set.title}」？`)) return;
+  try {
+    await api(`/api/questions/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    state.questionSets = state.questionSets.filter((item) => item.id !== id);
+    updateCounts();
+    renderQuestions();
+    toast('題目已刪除。', 'success');
+  } catch (error) {
+    toast(error.message, 'error');
+  }
+}
+
+function refreshDynamicIds() {
+  document.querySelectorAll('#history .history-card').forEach((card) => {
+    if (!card.dataset.noteId) {
+      const note = state.notes.find((item) => card.querySelector('span')?.textContent === item.title);
+      if (note) card.dataset.noteId = note.id;
+    }
+  });
+}
+
+bindEvents();
 
 bootstrap();

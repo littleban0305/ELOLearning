@@ -3,37 +3,163 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ELOLearning</title>
+    <meta name="theme-color" content="#101728" />
+    <meta name="description" content="ELOLearning — AI 學習助手" />
+    <title>ELOLearning｜AI 學習助手</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <header class="site-header">
-      <h1>ELOLearning</h1>
-      <p class="subtitle">Your very great learning website</p>
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="ELOLearning 首頁">
+        <span class="brand-mark">E</span>
+        <span>
+          <strong>ELOLearning</strong>
+          <small>AI Study Space</small>
+        </span>
+      </a>
+      <div class="top-actions">
+        <span id="statusDot" class="status-dot offline"></span>
+        <span id="statusText" class="status-text">檢查 AI 狀態中…</span>
+      </div>
     </header>
 
-    <main class="container">
-      <section class="card">
-        <h2>Gemini API 設定</h2>
-        <p>
-          這個頁面是網站本體起始版。請在本機建立 <code>.env</code>，填入你的
-          <code>GEMINI_API_KEY</code>。
-        </p>
-        <pre><code>GEMINI_API_KEY=your_real_key_here</code></pre>
+    <main id="top" class="app-shell">
+      <section class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow">LEARN SMARTER · NOT HARDER</span>
+          <h1>把「看不懂」<br /><span>變成「我懂了」。</span></h1>
+          <p>選一個主題，讓 AI 幫你拆解重點、出題練習，或直接當你的專屬老師。</p>
+          <div class="hero-pills">
+            <span>國中一年級</span>
+            <span>繁體中文</span>
+            <span>AI 輔助學習</span>
+          </div>
+        </div>
+        <div class="hero-card">
+          <div class="hero-card-top">
+            <span class="mini-label">TODAY'S FLOW</span>
+            <span class="spark">✦</span>
+          </div>
+          <div class="flow-step active"><b>01</b><span>選擇學習模式</span><i>✓</i></div>
+          <div class="flow-step"><b>02</b><span>輸入你的問題</span><i>→</i></div>
+          <div class="flow-step"><b>03</b><span>開始理解與練習</span><i>→</i></div>
+        </div>
       </section>
 
-      <section class="card">
-        <h2>測試互動</h2>
-        <label for="promptInput">輸入文字</label>
-        <textarea id="promptInput" rows="4" placeholder="輸入你想學習的主題..."></textarea>
-        <button id="sendBtn">送出</button>
-        <div id="result" class="result">尚未送出內容。</div>
+      <section class="workspace">
+        <aside class="sidebar">
+          <div class="panel-title"><span>學習模式</span><span class="kbd">1 / 2 / 3</span></div>
+          <button class="mode-card selected" data-mode="summary">
+            <span class="mode-icon">✦</span>
+            <span><strong>重點學習</strong><small>整理概念、關鍵句與易錯點</small></span>
+          </button>
+          <button class="mode-card" data-mode="quiz">
+            <span class="mode-icon">?</span>
+            <span><strong>快速測驗</strong><small>5 題選擇題，立即練習</small></span>
+          </button>
+          <button class="mode-card" data-mode="tutor">
+            <span class="mode-icon">AI</span>
+            <span><strong>AI 老師</strong><small>直接問問題，一步一步教你</small></span>
+          </button>
+
+          <div class="side-divider"></div>
+          <div class="panel-title"><span>熱門主題</span></div>
+          <div class="topic-list">
+            <button class="topic-chip">岳陽樓記</button>
+            <button class="topic-chip">論語選</button>
+            <button class="topic-chip">古詩詞閱讀</button>
+            <button class="topic-chip">修辭與寫作</button>
+          </div>
+
+          <div class="side-note">
+            <span>TIP</span>
+            <p>卡住時別只問「答案是什麼」，試試「為什麼？」效果通常更好。</p>
+          </div>
+        </aside>
+
+        <section class="main-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="eyebrow">LEARNING DESK</span>
+              <h2 id="modeTitle">今天想學什麼？</h2>
+            </div>
+            <button id="clearBtn" class="ghost-btn" type="button">清除內容</button>
+          </div>
+
+          <div class="selectors">
+            <label>
+              <span>年級</span>
+              <select id="gradeSelect">
+                <option>國中一年級</option>
+                <option>國中二年級</option>
+                <option>國中三年級</option>
+              </select>
+            </label>
+            <label>
+              <span>科目</span>
+              <select id="subjectSelect">
+                <option>國文</option>
+                <option>數學</option>
+                <option>自然</option>
+                <option>社會</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="prompt-area">
+            <label for="topicInput">學習主題</label>
+            <div class="input-wrap">
+              <input id="topicInput" type="text" maxlength="300" placeholder="例如：岳陽樓記、一次函數、細胞構造…" autocomplete="off" />
+              <button id="focusBtn" class="input-action" type="button" title="聚焦輸入框">⌕</button>
+            </div>
+            <label for="messageInput" id="messageLabel">想補充什麼？<span>選填</span></label>
+            <textarea id="messageInput" maxlength="2000" rows="4" placeholder="例如：我看過課文了，但不懂『先天下之憂而憂』到底在說什麼。"></textarea>
+            <div class="prompt-footer">
+              <span id="charCount">0 / 2000</span>
+              <button id="sendBtn" class="primary-btn" type="button"><span>開始學習</span><b>↗</b></button>
+            </div>
+          </div>
+
+          <div id="resultSection" class="result-section hidden">
+            <div class="result-header">
+              <div>
+                <span class="eyebrow">AI RESULT</span>
+                <h3 id="resultTitle">學習結果</h3>
+              </div>
+              <span id="modelBadge" class="model-badge">Gemini</span>
+            </div>
+            <div id="loading" class="loading hidden">
+              <div class="loading-orb"></div>
+              <div><strong>AI 正在整理內容…</strong><span>正在理解你的主題並準備學習內容</span></div>
+            </div>
+            <article id="result" class="result-content"></article>
+            <div id="sources" class="sources hidden"></div>
+          </div>
+
+          <div id="welcomeCard" class="welcome-card">
+            <div class="welcome-icon">✦</div>
+            <div>
+              <h3>準備好了。</h3>
+              <p>先輸入一個主題，ELOLearning 就會替你把學習內容整理成比較好懂的樣子。</p>
+            </div>
+            <div class="welcome-examples">
+              <button class="example-btn" data-example="我想理解岳陽樓記的中心思想">「理解岳陽樓記」</button>
+              <button class="example-btn" data-example="幫我複習論語選的重點">「複習論語選」</button>
+              <button class="example-btn" data-example="我不懂一次函數，可以用簡單的方法教我嗎？">「教我一次函數」</button>
+            </div>
+          </div>
+        </section>
       </section>
     </main>
 
-    <footer class="site-footer">
-      <small>© 2026 ELOLearning</small>
-    </footer>
+    <footer class="footer">ELOLearning · 讓學習更像理解，而不是背答案。</footer>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <script src="main.js"></script>
   </body>

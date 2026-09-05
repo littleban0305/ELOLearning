@@ -1,11 +1,13 @@
 {
   "name": "elolearning",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "國中一年級康軒國文 Gemini 3.6 Flash 學習原型",
+  "description": "ELOLearning — AI 學習助手（Node.js + Gemini）",
   "scripts": {
+    "start": "node server.js",
     "start:summary": "node index.js summary",
-    "start:quiz": "node index.js quiz"
+    "start:quiz": "node index.js quiz",
+    "dev": "node server.js"
   },
   "engines": {
     "node": ">=20"

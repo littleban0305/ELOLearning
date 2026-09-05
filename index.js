@@ -2,6 +2,8 @@ const { GEMINI_API_KEY } = require("./key");
 
 const mode = (process.argv[2] || "summary").toLowerCase();
 const topic = process.argv[3] || "國文課文重點";
+const primaryModel = process.env.GEMINI_MODEL || "gemini-3.6-flash";
+const fallbackModel = "gemini-2.5-flash";
 
 if (!["summary", "quiz"].includes(mode)) {
   console.error("mode 只能是 summary 或 quiz");
@@ -63,9 +65,8 @@ const prompt = `你是台灣國中國文老師。請先搜尋網路資料，再�
 ${formatInstruction}`;
 
 async function run() {
-  const response = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent",
-    {
+  async function generateWithModel(model) {
+    return fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -75,8 +76,24 @@ async function run() {
         contents: [{ parts: [{ text: prompt }] }],
         tools: [{ google_search: {} }],
       }),
+    });
+  }
+
+  let response = await generateWithModel(primaryModel);
+
+  if (!response.ok && primaryModel !== fallbackModel) {
+    const errText = await response.text();
+    const mayBeModelIssue =
+      response.status === 400 ||
+      response.status === 404 ||
+      /model|not found|unsupported/i.test(errText);
+
+    if (mayBeModelIssue) {
+      response = await generateWithModel(fallbackModel);
+    } else {
+      throw new Error(`Gemini API 呼叫失敗 (${response.status}): ${errText}`);
     }
-  );
+  }
 
   if (!response.ok) {
     const errText = await response.text();

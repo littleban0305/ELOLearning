@@ -1,166 +1,80 @@
 <!doctype html>
 <html lang="zh-Hant">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#101728" />
-    <meta name="description" content="ELOLearning — AI 學習助手" />
-    <title>ELOLearning｜AI 學習助手</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <div class="ambient ambient-one"></div>
-    <div class="ambient ambient-two"></div>
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ELOLearning｜AI 學習助手</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="authGate" class="auth-gate">
+  <div class="auth-card panel">
+    <div class="auth-brand"><span class="brand-mark">E</span><div><strong>ELOLearning</strong><small>AI Study Space</small></div></div>
+    <div class="auth-tabs"><button id="loginTab" class="auth-tab active">登入</button><button id="registerTab" class="auth-tab">註冊</button></div>
+    <form id="authForm">
+      <label id="nameWrap" class="auth-field" hidden>名稱<input id="nameInput" autocomplete="name" maxlength="60" placeholder="你的名稱"></label>
+      <label class="auth-field">Email<input id="emailInput" type="email" autocomplete="email" required placeholder="you@example.com"></label>
+      <label class="auth-field">密碼<input id="passwordInput" type="password" autocomplete="current-password" minlength="8" required placeholder="至少 8 個字元"></label>
+      <button id="authBtn" class="primary-btn auth-submit">登入 ELOLearning</button>
+      <p id="authMessage" class="auth-message"></p>
+    </form>
+    <div class="auth-note">你的重點與題目會依帳號分開儲存在伺服器端，不會與其他帳號混在一起。</div>
+  </div>
+</div>
 
-    <header class="topbar">
-      <a class="brand" href="#top" aria-label="ELOLearning 首頁">
-        <span class="brand-mark">E</span>
-        <span>
-          <strong>ELOLearning</strong>
-          <small>AI Study Space</small>
-        </span>
-      </a>
-      <div class="top-actions">
-        <span id="statusDot" class="status-dot offline"></span>
-        <span id="statusText" class="status-text">檢查 AI 狀態中…</span>
-      </div>
-    </header>
+<div id="appShell" hidden>
+<header class="topbar">
+  <a class="brand" href="#" aria-label="ELOLearning"><span class="brand-mark">E</span><span><strong>ELOLearning</strong><small>AI Study Space</small></span></a>
+  <div class="account">
+    <span id="userName"></span><button id="logoutBtn" class="ghost-btn">登出</button>
+  </div>
+</header>
+<main class="app">
+<aside class="sidebar">
+  <div class="nav-title">學習工作區</div>
+  <button id="navAsk" class="nav-btn active"><span>✦</span>問 AI</button>
+  <button id="navNotes" class="nav-btn"><span>▣</span>我的重點 <b id="notesCount">0 筆</b></button>
+  <button id="navQuestions" class="nav-btn"><span>☷</span>我的題目 <b id="questionsCount">0 份</b></button>
+  <button id="navQuiz" class="nav-btn"><span>?</span>開始出題</button>
+  <div class="side-tip"><strong>你的資料是分開的</strong><p>登入後，學習筆記與 AI 題目會儲存在你的帳號底下。其他帳號看不到你的內容。</p></div>
+</aside>
 
-    <main id="top" class="app-shell">
-      <section class="hero">
-        <div class="hero-copy">
-          <span class="eyebrow">LEARN SMARTER · NOT HARDER</span>
-          <h1>把「看不懂」<br /><span>變成「我懂了」。</span></h1>
-          <p>選一個主題，讓 AI 幫你拆解重點、出題練習，或直接當你的專屬老師。</p>
-          <div class="hero-pills">
-            <span>國中一年級</span>
-            <span>繁體中文</span>
-            <span>AI 輔助學習</span>
-          </div>
-        </div>
-        <div class="hero-card">
-          <div class="hero-card-top">
-            <span class="mini-label">TODAY'S FLOW</span>
-            <span class="spark">✦</span>
-          </div>
-          <div class="flow-step active"><b>01</b><span>選擇學習模式</span><i>✓</i></div>
-          <div class="flow-step"><b>02</b><span>輸入你的問題</span><i>→</i></div>
-          <div class="flow-step"><b>03</b><span>開始理解與練習</span><i>→</i></div>
-        </div>
-      </section>
+<section class="content">
+<section id="askPanel">
+<div class="hero"><div><span class="eyebrow">AI LEARNING</span><h1>問 AI，<span>把學過的東西留下來。</span></h1><p>你可以要求 AI 使用表格、粗體、斜體、清單等格式；回答成功後會自動保存到你的帳號。</p></div><div class="flow"><span>01 問 AI</span><b>→</b><span>02 雲端保存</span><b>→</b><span>03 出題複習</span></div></div>
+<div class="panel ask-panel">
+<div class="panel-head"><div><span class="eyebrow">ASK</span><h2>今天想學什麼？</h2><p>例如：「請把差異整理成表格，重要名詞用粗體」。</p></div></div>
+<div class="selectors">
+<label>年級<select id="gradeSelect"><option>國中一年級</option><option>國中二年級</option><option>國中三年級</option><option>高中</option></select></label>
+<label>科目<select id="subjectSelect"><option>國文</option><option>數學</option><option>英文</option><option>自然</option><option>社會</option><option>其他</option></select></label>
+</div>
+<label class="field-label">學習主題</label><input id="topicInput" class="topic-input" maxlength="300" placeholder="例如：岳陽樓記、一次函數、細胞構造…">
+<label class="field-label">你想問 AI 什麼？ <small>可以指定格式</small></label>
+<textarea id="questionInput" maxlength="3000" rows="6" placeholder="例如：請教我一次函數，最後幫我整理成一張表格，重要觀念用粗體。"></textarea>
+<div class="format-hints"><button data-prompt="請整理成表格">表格</button><button data-prompt="重要名詞請使用粗體，補充內容使用斜體">粗體＋斜體</button><button data-prompt="請用條列式整理">條列</button><button data-prompt="請分成「定義／例子／容易搞混」">分段</button></div>
+<div class="ask-footer"><span class="hint">Ctrl / Cmd + Enter 送出</span><button id="askBtn" class="primary-btn">詢問 AI ↗</button></div>
+</div>
+<div id="loading" class="loading" hidden><div class="loader"></div><div><strong>AI 正在思考…</strong><span id="loadingSub">回答完成後會自動保存。</span></div></div>
+<section id="resultBox" class="panel result-panel" hidden><div class="panel-head"><div><span class="eyebrow">AI RESULT</span><h2>這次學到的內容</h2></div><div class="result-actions"><span class="saved-tag">✓ 已同步</span><button id="editCurrentBtn" class="ghost-btn">在我的重點編輯</button></div></div><article id="result" class="rich-content"></article></section>
+</section>
 
-      <section class="workspace">
-        <aside class="sidebar">
-          <div class="panel-title"><span>學習模式</span><span class="kbd">1 / 2 / 3</span></div>
-          <button class="mode-card selected" data-mode="summary">
-            <span class="mode-icon">✦</span>
-            <span><strong>重點學習</strong><small>整理概念、關鍵句與易錯點</small></span>
-          </button>
-          <button class="mode-card" data-mode="quiz">
-            <span class="mode-icon">?</span>
-            <span><strong>快速測驗</strong><small>5 題選擇題，立即練習</small></span>
-          </button>
-          <button class="mode-card" data-mode="tutor">
-            <span class="mode-icon">AI</span>
-            <span><strong>AI 老師</strong><small>直接問問題，一步一步教你</small></span>
-          </button>
+<section id="notesPanel" class="panel page-panel" hidden>
+<div class="panel-head"><div><span class="eyebrow">MEMORY</span><h2>我的重點</h2><p>這裡的筆記屬於目前登入帳號，可直接編輯並同步保存。</p></div><div class="notes-toolbar-actions"><button id="newNoteBtn" class="ghost-btn">＋ 新筆記</button><button id="clearAll" class="danger-btn">清空全部</button></div></div>
+<div class="notes-layout"><div class="notes-list"><div id="emptyNotes" class="empty"><div>✦</div><h3>還沒有學習紀錄</h3><p>先到「問 AI」學一個主題，重點會自動留下。</p></div><div id="history"></div></div>
+<div id="noteEditorArea" class="note-editor-area" hidden><div class="editor-header"><div><span class="eyebrow">EDITOR</span><input id="noteTitleInput" class="note-title-input" placeholder="筆記標題"><div id="noteMeta" class="note-meta"></div></div><span id="saveIndicator" class="save-indicator">已同步</span></div>
+<div class="editor-toolbar"><button data-cmd="bold"><strong>B</strong></button><button data-cmd="italic"><em>I</em></button><button data-cmd="underline"><u>U</u></button><button data-cmd="strikeThrough"><s>S</s></button><span class="toolbar-sep"></span><select id="formatBlock"><option value="p">本文</option><option value="h2">大標題</option><option value="h3">小標題</option><option value="blockquote">引用</option><option value="pre">程式碼</option></select><button data-cmd="insertUnorderedList">• 清單</button><button data-cmd="insertOrderedList">1. 清單</button><span class="toolbar-sep"></span><button id="insertTableBtn">▦ 表格</button><button data-cmd="undo">↶</button><button data-cmd="redo">↷</button></div>
+<article id="noteEditor" class="rich-editor" contenteditable="true" spellcheck="true"></article>
+<div class="editor-bottom"><span>修改會自動同步到雲端。</span><div><button id="downloadWordBtn" class="ghost-btn">下載 Word</button><button id="downloadPdfBtn" class="ghost-btn">下載 PDF</button><button id="deleteNoteBtn" class="danger-btn">刪除筆記</button></div></div></div></div>
+</section>
 
-          <div class="side-divider"></div>
-          <div class="panel-title"><span>熱門主題</span></div>
-          <div class="topic-list">
-            <button class="topic-chip">岳陽樓記</button>
-            <button class="topic-chip">論語選</button>
-            <button class="topic-chip">古詩詞閱讀</button>
-            <button class="topic-chip">修辭與寫作</button>
-          </div>
+<section id="quizPanel" class="panel page-panel" hidden><div class="panel-head"><div><span class="eyebrow">QUIZ</span><h2>用以前學過的內容出題</h2><p>AI 會讀取你的雲端筆記，再根據那些內容產生題目；生成後會自動保存到「我的題目」。</p></div></div>
+<div class="quiz-settings"><label>題數<select id="quizCount"><option value="5">5 題</option><option value="8">8 題</option><option value="10">10 題</option></select></label><label>難度<select id="difficultySelect"><option>簡單</option><option selected>普通</option><option>困難</option></select></label><label class="quiz-scope-label">使用哪一些筆記<select id="quizScope"><option value="all">全部我的重點</option></select></label><button id="quizBtn" class="primary-btn">讓 AI 出題 →</button></div><div id="quizBox" hidden></div></section>
 
-          <div class="side-note">
-            <span>TIP</span>
-            <p>卡住時別只問「答案是什麼」，試試「為什麼？」效果通常更好。</p>
-          </div>
-        </aside>
-
-        <section class="main-panel">
-          <div class="panel-heading">
-            <div>
-              <span class="eyebrow">LEARNING DESK</span>
-              <h2 id="modeTitle">今天想學什麼？</h2>
-            </div>
-            <button id="clearBtn" class="ghost-btn" type="button">清除內容</button>
-          </div>
-
-          <div class="selectors">
-            <label>
-              <span>年級</span>
-              <select id="gradeSelect">
-                <option>國中一年級</option>
-                <option>國中二年級</option>
-                <option>國中三年級</option>
-              </select>
-            </label>
-            <label>
-              <span>科目</span>
-              <select id="subjectSelect">
-                <option>國文</option>
-                <option>數學</option>
-                <option>自然</option>
-                <option>社會</option>
-              </select>
-            </label>
-          </div>
-
-          <div class="prompt-area">
-            <label for="topicInput">學習主題</label>
-            <div class="input-wrap">
-              <input id="topicInput" type="text" maxlength="300" placeholder="例如：岳陽樓記、一次函數、細胞構造…" autocomplete="off" />
-              <button id="focusBtn" class="input-action" type="button" title="聚焦輸入框">⌕</button>
-            </div>
-            <label for="messageInput" id="messageLabel">想補充什麼？<span>選填</span></label>
-            <textarea id="messageInput" maxlength="2000" rows="4" placeholder="例如：我看過課文了，但不懂『先天下之憂而憂』到底在說什麼。"></textarea>
-            <div class="prompt-footer">
-              <span id="charCount">0 / 2000</span>
-              <button id="sendBtn" class="primary-btn" type="button"><span>開始學習</span><b>↗</b></button>
-            </div>
-          </div>
-
-          <div id="resultSection" class="result-section hidden">
-            <div class="result-header">
-              <div>
-                <span class="eyebrow">AI RESULT</span>
-                <h3 id="resultTitle">學習結果</h3>
-              </div>
-              <span id="modelBadge" class="model-badge">Gemini</span>
-            </div>
-            <div id="loading" class="loading hidden">
-              <div class="loading-orb"></div>
-              <div><strong>AI 正在整理內容…</strong><span>正在理解你的主題並準備學習內容</span></div>
-            </div>
-            <article id="result" class="result-content"></article>
-            <div id="sources" class="sources hidden"></div>
-          </div>
-
-          <div id="welcomeCard" class="welcome-card">
-            <div class="welcome-icon">✦</div>
-            <div>
-              <h3>準備好了。</h3>
-              <p>先輸入一個主題，ELOLearning 就會替你把學習內容整理成比較好懂的樣子。</p>
-            </div>
-            <div class="welcome-examples">
-              <button class="example-btn" data-example="我想理解岳陽樓記的中心思想">「理解岳陽樓記」</button>
-              <button class="example-btn" data-example="幫我複習論語選的重點">「複習論語選」</button>
-              <button class="example-btn" data-example="我不懂一次函數，可以用簡單的方法教我嗎？">「教我一次函數」</button>
-            </div>
-          </div>
-        </section>
-      </section>
-    </main>
-
-    <footer class="footer">ELOLearning · 讓學習更像理解，而不是背答案。</footer>
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
-    <script src="main.js"></script>
-  </body>
-</html>
+<section id="questionsPanel" class="panel page-panel" hidden><div class="panel-head"><div><span class="eyebrow">SAVED QUIZZES</span><h2>我的題目</h2><p>AI 產生過的題目會保存在你的帳號，可以之後再拿出來做。</p></div></div><div id="questionsList"></div></section>
+</section></main>
+</div>
+<div id="toast" class="toast"></div>
+<script src="main.js"></script>
+</body></html>

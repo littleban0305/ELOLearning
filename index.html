@@ -12,7 +12,7 @@
 <div id="authGate" class="auth-gate">
   <div class="auth-card panel">
     <div class="auth-brand">
-  <div class="css-logo css-logo-sm" aria-hidden="true"><span class="css-logo-e">E</span><i></i><i></i><i></i></div>
+  <div class="css-logo css-logo-sm" aria-hidden="true"><span class="css-logo-e">E</span></div>
   <div><strong>ELOLearning</strong><small>AI 學習助手</small></div>
 </div>
     <div class="auth-tabs"><button id="loginTab" class="auth-tab active">登入</button><button id="registerTab" class="auth-tab">註冊</button></div>
@@ -31,7 +31,8 @@
 <header class="topbar">
   <a class="brand" href="#" aria-label="ELOLearning"><span class="brand-mark">E</span><span><strong>ELOLearning</strong><small>AI Study Space</small></span></a>
   <div class="account">
-    <span id="userName"></span><button id="logoutBtn" class="ghost-btn">登出</button>
+    <button id="accountBtn" class="account-profile" type="button" aria-label="開啟設定"><span id="accountAvatar" class="avatar avatar-sm">E</span><span id="userName"></span></button>
+    <button id="logoutBtn" class="ghost-btn">登出</button>
   </div>
 </header>
 <main class="app">
@@ -41,6 +42,7 @@
   <button id="navNotes" class="nav-btn"><span class="nav-icon">▣</span><span class="nav-copy"><strong>我的重點</strong><small><b id="notesCount">0 筆</b>・編輯與整理</small></span></button>
   <button id="navQuestions" class="nav-btn"><span class="nav-icon">☷</span><span class="nav-copy"><strong>我的題目</strong><small><b id="questionsCount">0 份</b>・查看練習</small></span></button>
   <button id="navQuiz" class="nav-btn"><span class="nav-icon">?</span><span class="nav-copy"><strong>開始出題</strong><small>根據重點生成題目</small></span></button>
+  <button id="navSettings" class="nav-btn"><span class="nav-icon">⚙</span><span class="nav-copy"><strong>設定</strong><small>個人資料與 AI 老師</small></span></button>
 </aside>
 
 <section class="content">
@@ -56,7 +58,7 @@
     <div class="hero-glow"></div>
     <div class="orbit orbit-a"></div>
     <div class="orbit orbit-b"></div>
-    <div class="hero-logo css-logo css-logo-lg"><span class="css-logo-e">E</span><i></i><i></i><i></i></div>
+    <div class="hero-logo css-logo css-logo-lg"><span class="css-logo-e">E</span></div>
     <div class="float-chip chip-one">AI</div>
     <div class="float-chip chip-two">✦</div>
     <div class="float-chip chip-three">學習</div>
@@ -97,6 +99,43 @@
 <div class="quiz-settings"><label>題數<select id="quizCount"><option value="5">5 題</option><option value="8">8 題</option><option value="10">10 題</option></select></label><label>難度<select id="difficultySelect"><option>簡單</option><option selected>普通</option><option>困難</option></select></label><label class="quiz-scope-label">使用哪一些筆記<select id="quizScope"><option value="all">全部我的重點</option></select></label><button id="quizBtn" class="primary-btn">讓 AI 出題 →</button></div><div id="quizBox" hidden></div></section>
 
 <section id="questionsPanel" class="panel page-panel" hidden><div class="panel-head"><div><span class="eyebrow">SAVED QUIZZES</span><h2>我的題目</h2><p>查看並重新作答。</p></div></div><div id="questionsList"></div></section>
+<section id="settingsPanel" class="settings-page" hidden>
+<div class="settings-hero">
+  <div><span class="eyebrow">SETTINGS</span><h2>設定</h2><p>管理個人資料，也可以調整 AI 老師的教學方式。</p></div>
+</div>
+<div class="settings-grid">
+  <section class="panel settings-card profile-card">
+    <div class="settings-card-head"><div><span class="section-kicker">PERSONAL PROFILE</span><h3>個人資料</h3><p>這些資料只會套用在你的帳號。</p></div></div>
+    <div class="profile-layout">
+      <div class="avatar-stage"><button id="avatarButton" class="profile-avatar avatar avatar-xl" type="button" title="更換頭像">E</button><input id="avatarInput" type="file" accept="image/png,image/jpeg,image/webp" hidden><small>點擊更換頭像</small></div>
+      <div class="profile-form">
+        <label class="settings-field">顯示名稱<input id="profileNameInput" maxlength="60" placeholder="你的名稱"></label>
+        <label class="settings-field">Email<input id="profileEmailInput" disabled></label>
+        <button id="saveProfileBtn" class="primary-btn" type="button">儲存個人資料</button>
+      </div>
+    </div>
+  </section>
+  <section class="panel settings-card password-card">
+    <div class="settings-card-head"><div><span class="section-kicker">SECURITY</span><h3>密碼</h3><p>定期更新密碼可以讓帳號更安全。</p></div></div>
+    <div class="password-form">
+      <label class="settings-field">目前密碼<input id="currentPasswordInput" type="password" autocomplete="current-password" minlength="8"></label>
+      <label class="settings-field">新密碼<input id="newPasswordInput" type="password" autocomplete="new-password" minlength="8"></label>
+      <label class="settings-field">確認新密碼<input id="confirmPasswordInput" type="password" autocomplete="new-password" minlength="8"></label>
+      <button id="changePasswordBtn" class="ghost-btn" type="button">更新密碼</button>
+    </div>
+  </section>
+  <section class="panel settings-card ai-settings-card">
+    <div class="settings-card-head"><div><span class="section-kicker">AI TEACHER</span><h3>AI 老師設定</h3><p>之後新增的 AI 教學功能都會集中在這裡。</p></div></div>
+    <div class="ai-settings-grid">
+      <label class="settings-field">教學風格<select id="aiStyleSelect"><option value="親切引導">親切引導</option><option value="條理清晰">條理清晰</option><option value="活潑有趣">活潑有趣</option><option value="考試導向">考試導向</option></select></label>
+      <label class="settings-field">回答詳細程度<select id="aiDetailSelect"><option value="精簡">精簡</option><option value="適中">適中</option><option value="詳細">詳細</option></select></label>
+      <label class="settings-field">預設回覆語言<select id="aiLanguageSelect"><option value="繁體中文">繁體中文</option><option value="簡潔中文">簡潔中文</option></select></label>
+      <label class="settings-toggle"><input id="aiStepsToggle" type="checkbox"><span><strong>需要時提供解題步驟</strong><small>數學、自然等題型會優先拆解推理步驟。</small></span></label>
+    </div>
+    <div class="settings-save-row"><span id="aiSettingsStatus" class="save-indicator">已同步</span><button id="saveAiSettingsBtn" class="primary-btn" type="button">儲存 AI 老師設定</button></div>
+  </section>
+</div>
+</section>
 </section></main>
 </div>
 <div id="toast" class="toast"></div>

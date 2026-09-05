@@ -33,6 +33,7 @@ const API_KEY = String(process.env.GEMINI_API_KEY || '').trim();
 const MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30;
 const MAX_BODY = 1_000_000;
+const DEFAULT_AI_SETTINGS = Object.freeze({ teachingStyle: '親切引導', detailLevel: '適中', language: '繁體中文', showSteps: true });
 
 const DATA_DIR = path.join(ROOT, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'elolearning.json');
@@ -171,6 +172,26 @@ function safeNoteHtml(html = '') {
     })
     .slice(0, 300000);
 }
+function sanitizeAvatar(value = '') {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (!/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(raw)) {
+    throw Object.assign(new Error('頭像格式不正確。請上傳 PNG、JPG 或 WebP。'), { status: 400 });
+  }
+  if (raw.length > 600_000) throw Object.assign(new Error('頭像檔案太大，請選擇較小的圖片。'), { status: 413 });
+  return raw;
+}
+function normalizeAiSettings(value) {
+  const s = value && typeof value === 'object' ? value : {};
+  const teachingStyle = ['親切引導','條理清晰','活潑有趣','考試導向'].includes(s.teachingStyle) ? s.teachingStyle : DEFAULT_AI_SETTINGS.teachingStyle;
+  const detailLevel = ['精簡','適中','詳細'].includes(s.detailLevel) ? s.detailLevel : DEFAULT_AI_SETTINGS.detailLevel;
+  const language = ['繁體中文','簡潔中文'].includes(s.language) ? s.language : DEFAULT_AI_SETTINGS.language;
+  return { teachingStyle, detailLevel, language, showSteps: s.showSteps !== false };
+}
+function publicUser(user) {
+  return { id:user.id, email:user.email, name:user.name, avatar:user.avatar || '', aiSettings:normalizeAiSettings(user.aiSettings) };
+}
+
 function escapeHtmlServer(value = '') {
   return String(value).replace(/[&<>'"]/g, (c) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[c]));
 }
@@ -267,8 +288,11 @@ async function askGemini(prompt, jsonMode = false) {
   }
 }
 
-function buildAskPrompt({ topic, question, grade, subject }) {
-  return `你是 ELOLearning 的 AI 老師。請用繁體中文教學，對象是台灣${grade}學生，科目是${subject}。
+function buildAskPrompt({ topic, question, grade, subject, aiSettings }) {
+  const settings = normalizeAiSettings(aiSettings);
+  return `你是 ELOLearning 的 AI 老師。請用${settings.language}教學，對象是台灣${grade}學生，科目是${subject}。
+
+AI 老師設定：教學風格=${settings.teachingStyle}；詳細程度=${settings.detailLevel}；需要時提供解題步驟=${settings.showSteps ? '是' : '否'}。
 
 學習主題：${topic}
 學生問題：${question || '請先用簡單方式介紹這個主題。'}
@@ -289,10 +313,13 @@ function buildAskPrompt({ topic, question, grade, subject }) {
 - 不要亂猜不確定的資訊。`;
 }
 
-function buildQuizPrompt({ notes, count, difficulty, subject }) {
+function buildQuizPrompt({ notes, count, difficulty, subject, aiSettings }) {
+  const settings = normalizeAiSettings(aiSettings);
   return `你是 ELOLearning 的出題老師。
 
 科目：${subject}
+AI 教學風格：${settings.teachingStyle}；詳細程度：${settings.detailLevel}
+
 題數：${count}
 難度：${difficulty}
 
@@ -343,7 +370,7 @@ async function handleApi(req, res, db, auth) {
     return sendJson(res, 200, { ok:true, authenticated:Boolean(auth), configured:Boolean(API_KEY), model:MODEL });
   }
   if (req.method === 'GET' && url.pathname === '/api/auth/me') {
-    return sendJson(res, 200, auth ? { authenticated:true, user:{ id:auth.user.id, email:auth.user.email, name:auth.user.name } } : { authenticated:false });
+    return sendJson(res, 200, auth ? { authenticated:true, user:publicUser(auth.user) } : { authenticated:false });
   }
 
   if (req.method === 'POST' && url.pathname === '/api/auth/register') {
@@ -355,12 +382,12 @@ async function handleApi(req, res, db, auth) {
     if (password.length < 8) return sendJson(res,400,{error:'密碼至少需要 8 個字元。'});
     if (db.users.some((u)=>u.email===email)) return sendJson(res,409,{error:'這個 Email 已經註冊過了。'});
     const {salt, hash} = await makePasswordHash(password);
-    const user = { id:randomId(), email, name:name || email.split('@')[0], passwordHash:hash, salt, createdAt:new Date().toISOString() };
+    const user = { id:randomId(), email, name:name || email.split('@')[0], avatar:'', aiSettings:{...DEFAULT_AI_SETTINGS}, passwordHash:hash, salt, createdAt:new Date().toISOString() };
     db.users.push(user);
     const token = crypto.randomBytes(32).toString('base64url');
     db.sessions.push({id:randomId(), userId:user.id, tokenHash:sha256(token), expiresAt:Date.now()+SESSION_TTL_MS});
     await saveDb(db);
-    return sendJson(res,201,{ok:true,user:{id:user.id,email:user.email,name:user.name}},{'Set-Cookie':sessionCookie(token)});
+    return sendJson(res,201,{ok:true,user:publicUser(user)},{'Set-Cookie':sessionCookie(token)});
   }
 
   if (req.method === 'POST' && url.pathname === '/api/auth/login') {
@@ -373,7 +400,7 @@ async function handleApi(req, res, db, auth) {
     db.sessions = db.sessions.filter((s)=>s.userId!==user.id || s.expiresAt>Date.now());
     db.sessions.push({id:randomId(),userId:user.id,tokenHash:sha256(token),expiresAt:Date.now()+SESSION_TTL_MS});
     await saveDb(db);
-    return sendJson(res,200,{ok:true,user:{id:user.id,email:user.email,name:user.name}},{'Set-Cookie':sessionCookie(token)});
+    return sendJson(res,200,{ok:true,user:publicUser(user)},{'Set-Cookie':sessionCookie(token)});
   }
 
   if (req.method === 'POST' && url.pathname === '/api/auth/logout') {
@@ -385,6 +412,41 @@ async function handleApi(req, res, db, auth) {
   }
 
   if (!auth) return sendJson(res,401,{error:'請先登入 ELOLearning。'});
+
+  if (req.method === 'PUT' && url.pathname === '/api/profile') {
+    const body = await readJson(req);
+    const name = clean(body.name, 60);
+    if (!name) return sendJson(res, 400, { error: '顯示名稱不能是空白。' });
+    auth.user.name = name;
+    if (body.avatar !== undefined) auth.user.avatar = sanitizeAvatar(body.avatar);
+    await saveDb(db);
+    return sendJson(res, 200, { ok: true, user: publicUser(auth.user) });
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/profile/password') {
+    const body = await readJson(req);
+    const currentPassword = String(body.currentPassword || '');
+    const newPassword = String(body.newPassword || '');
+    if (!currentPassword) return sendJson(res, 400, { error: '請輸入目前密碼。' });
+    if (newPassword.length < 8) return sendJson(res, 400, { error: '新密碼至少需要 8 個字元。' });
+    if (!(await verifyPassword(currentPassword, auth.user))) return sendJson(res, 401, { error: '目前密碼不正確。' });
+    const { salt, hash } = await makePasswordHash(newPassword);
+    auth.user.salt = salt;
+    auth.user.passwordHash = hash;
+    // 密碼變更後讓其他登入階段全部失效，當前這次登入重新簽發新的 session。
+    db.sessions = db.sessions.filter((s) => s.userId !== auth.user.id);
+    const token = crypto.randomBytes(32).toString('base64url');
+    db.sessions.push({ id: randomId(), userId: auth.user.id, tokenHash: sha256(token), expiresAt: Date.now() + SESSION_TTL_MS });
+    await saveDb(db);
+    return sendJson(res, 200, { ok: true, message: '密碼已更新，其他裝置的登入狀態已失效。' }, { 'Set-Cookie': sessionCookie(token) });
+  }
+
+  if (req.method === 'PUT' && url.pathname === '/api/settings/ai') {
+    const body = await readJson(req);
+    auth.user.aiSettings = normalizeAiSettings(body);
+    await saveDb(db);
+    return sendJson(res, 200, { ok: true, aiSettings: auth.user.aiSettings });
+  }
 
   if (req.method === 'GET' && url.pathname === '/api/data') {
     const notes = db.notes.filter((n)=>n.userId===auth.user.id).sort((a,b)=>new Date(b.updatedAt)-new Date(a.updatedAt));
@@ -460,7 +522,7 @@ async function handleApi(req, res, db, auth) {
     if (!topic) return sendJson(res,400,{error:'請先輸入學習主題。'});
     const raw = await askGemini(buildAskPrompt({
       topic, question:clean(body.question||body.message,3000),
-      grade:clean(body.grade||'國中一年級',50), subject:clean(body.subject||'國文',50)
+      grade:clean(body.grade||'國中一年級',50), subject:clean(body.subject||'國文',50), aiSettings:auth.user.aiSettings
     }));
     return sendJson(res,200,{ok:true,text:raw,html:normalizeRichAnswer(raw),model:MODEL});
   }
@@ -473,7 +535,7 @@ async function handleApi(req, res, db, auth) {
     const count = Math.min(Math.max(Number(body.count)||5,3),10);
     const difficulty = clean(body.difficulty||'普通',20);
     const subject = clean(body.subject||'綜合',50);
-    const raw = await askGemini(buildQuizPrompt({notes:plainNotes(ownedNotes),count,difficulty,subject}),true);
+    const raw = await askGemini(buildQuizPrompt({notes:plainNotes(ownedNotes),count,difficulty,subject,aiSettings:auth.user.aiSettings}),true);
     const quiz = parseQuiz(raw);
     const quizSet = {
       id:randomId(),userId:auth.user.id,title:clean(body.title||`AI 練習｜${new Date().toLocaleDateString('zh-TW')}`,200),

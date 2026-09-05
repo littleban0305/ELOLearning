@@ -9,6 +9,7 @@ const state = {
   questionSets: [],
   currentNoteId: null,
   currentQuiz: null,
+  aiSettings: { teachingStyle: '親切引導', detailLevel: '適中', language: '繁體中文', showSteps: true },
   busy: false,
 };
 
@@ -17,15 +18,18 @@ const els = {
   authForm: $('#authForm'), loginTab: $('#loginTab'), registerTab: $('#registerTab'),
   nameWrap: $('#nameWrap'), nameInput: $('#nameInput'), emailInput: $('#emailInput'),
   passwordInput: $('#passwordInput'), authBtn: $('#authBtn'), authMessage: $('#authMessage'),
-  userName: $('#userName'), logoutBtn: $('#logoutBtn'),
-  navAsk: $('#navAsk'), navNotes: $('#navNotes'), navQuestions: $('#navQuestions'), navQuiz: $('#navQuiz'),
-  askPanel: $('#askPanel'), notesPanel: $('#notesPanel'), questionsPanel: $('#questionsPanel'), quizPanel: $('#quizPanel'),
+  userName: $('#userName'), accountBtn: $('#accountBtn'), accountAvatar: $('#accountAvatar'), logoutBtn: $('#logoutBtn'),
+  navAsk: $('#navAsk'), navNotes: $('#navNotes'), navQuestions: $('#navQuestions'), navQuiz: $('#navQuiz'), navSettings: $('#navSettings'),
+  askPanel: $('#askPanel'), notesPanel: $('#notesPanel'), questionsPanel: $('#questionsPanel'), quizPanel: $('#quizPanel'), settingsPanel: $('#settingsPanel'),
   topic: $('#topicInput'), question: $('#questionInput'), grade: $('#gradeSelect'), subject: $('#subjectSelect'),
   askBtn: $('#askBtn'), result: $('#result'), resultBox: $('#resultBox'), loading: $('#loading'),
   history: $('#history'), emptyNotes: $('#emptyNotes'), notesCount: $('#notesCount'), questionsCount: $('#questionsCount'),
   editorArea: $('#noteEditorArea'), editor: $('#noteEditor'), titleInput: $('#noteTitleInput'), noteMeta: $('#noteMeta'),
   saveIndicator: $('#saveIndicator'), formatBlock: $('#formatBlock'), quizBox: $('#quizBox'), quizCount: $('#quizCount'), difficulty: $('#difficultySelect'),
   quizScope: $('#quizScope'), quizBtn: $('#quizBtn'), questionsList: $('#questionsList'), toast: $('#toast'),
+  avatarButton: $('#avatarButton'), avatarInput: $('#avatarInput'), profileNameInput: $('#profileNameInput'), profileEmailInput: $('#profileEmailInput'), saveProfileBtn: $('#saveProfileBtn'),
+  currentPasswordInput: $('#currentPasswordInput'), newPasswordInput: $('#newPasswordInput'), confirmPasswordInput: $('#confirmPasswordInput'), changePasswordBtn: $('#changePasswordBtn'),
+  aiStyleSelect: $('#aiStyleSelect'), aiDetailSelect: $('#aiDetailSelect'), aiLanguageSelect: $('#aiLanguageSelect'), aiStepsToggle: $('#aiStepsToggle'), aiSettingsStatus: $('#aiSettingsStatus'), saveAiSettingsBtn: $('#saveAiSettingsBtn'),
 };
 
 const ALLOWED_TAGS = new Set(['H1','H2','H3','H4','P','STRONG','EM','U','S','DEL','UL','OL','LI','BLOCKQUOTE','PRE','CODE','BR','HR','TABLE','THEAD','TBODY','TR','TH','TD']);
@@ -95,7 +99,10 @@ async function submitAuth(e) {
 
 async function enterApp() {
   els.authGate.hidden=true; els.appShell.hidden=false;
+  state.aiSettings=state.user.aiSettings||state.aiSettings;
   els.userName.textContent=`${state.user.name} · ${state.user.email}`;
+  syncProfileUi();
+  applyAiSettingsUi();
   await loadData();
   const old = loadLegacyNotes();
   if(old.length) {
@@ -140,12 +147,14 @@ function updateQuizScope() {
 
 function showScreen(name) {
   state.screen=name;
-  const panels={ask:els.askPanel,notes:els.notesPanel,questions:els.questionsPanel,quiz:els.quizPanel};
+  const panels={ask:els.askPanel,notes:els.notesPanel,questions:els.questionsPanel,quiz:els.quizPanel,settings:els.settingsPanel};
   Object.entries(panels).forEach(([k,v])=>v.hidden=k!==name);
-  [els.navAsk,els.navNotes,els.navQuestions,els.navQuiz].forEach(b=>b.classList.remove('active'));
-  ({ask:els.navAsk,notes:els.navNotes,questions:els.navQuestions,quiz:els.navQuiz})[name].classList.add('active');
+  [els.navAsk,els.navNotes,els.navQuestions,els.navQuiz,els.navSettings].forEach(b=>b?.classList.remove('active'));
+  const active={ask:els.navAsk,notes:els.navNotes,questions:els.navQuestions,quiz:els.navQuiz,settings:els.navSettings}[name];
+  active?.classList.add('active');
   if(name==='notes' && state.currentNoteId) openNote(state.currentNoteId);
   if(name==='questions') renderQuestions();
+  if(name==='settings') renderSettings();
 }
 
 function setBusy(value,text='AI 正在思考…') {
@@ -193,7 +202,7 @@ async function ask() {
   if(!topic) return toast('先輸入學習主題。','warn');
   setBusy(true,'AI 正在回答並整理…'); els.resultBox.hidden=false;
   try {
-    const data=await api('/api/ask',{method:'POST',body:{topic,question,grade:els.grade.value,subject:els.subject.value}});
+    const data=await api('/api/ask',{method:'POST',body:{topic,question,grade:els.grade.value,subject:els.subject.value,aiSettings:state.aiSettings}});
     const html=sanitizeRichHtml(data.html||'<p>沒有內容</p>'); els.result.innerHTML=html;
     const note=await createNoteFromAi({title:topic,topic,question,grade:els.grade.value,subject:els.subject.value,html});
     toast(`「${note.title}」已保存到你的帳號！`,'success');
@@ -273,7 +282,7 @@ async function makeQuiz(){
   if(!selected.length)return toast('這份筆記不存在。','warn');
   setBusy(true,'AI 正在讀你的筆記並出題…');
   try{
-    const r=await api('/api/quiz',{method:'POST',body:{notes:plainNotesForQuiz(selected),noteIds:selected.map(n=>n.id),count:Number(els.quizCount.value),difficulty:els.difficulty.value,subject:selected[0]?.subject||'綜合'}});
+    const r=await api('/api/quiz',{method:'POST',body:{notes:plainNotesForQuiz(selected),noteIds:selected.map(n=>n.id),count:Number(els.quizCount.value),difficulty:els.difficulty.value,subject:selected[0]?.subject||'綜合',aiSettings:state.aiSettings}});
     state.questionSets.unshift(r.questionSet); updateCounts(); renderQuestions(); renderQuiz(r.quiz,r.questionSet.id); toast('題目已保存到「我的題目」。','success');
   } catch(err){toast(`出題失敗：${err.message}`,'error');}
   finally{setBusy(false);}
@@ -305,6 +314,94 @@ function renderQuestions(){
   });
 }
 
+function initials(name='E'){
+  const value=String(name||'E').trim();
+  return value ? Array.from(value)[0].toUpperCase() : 'E';
+}
+function setAvatarElements(src,name){
+  const list=[els.accountAvatar,els.avatarButton];
+  list.forEach((node)=>{
+    if(!node) return;
+    if(src){ node.textContent=''; node.style.backgroundImage=`url("${src}")`; node.classList.add('has-image'); }
+    else { node.style.backgroundImage=''; node.textContent=initials(name); node.classList.remove('has-image'); }
+  });
+}
+function syncProfileUi(){
+  if(!state.user) return;
+  els.userName.textContent=`${state.user.name} · ${state.user.email}`;
+  els.profileNameInput.value=state.user.name||'';
+  els.profileEmailInput.value=state.user.email||'';
+  setAvatarElements(state.user.avatar||'', state.user.name);
+}
+function applyAiSettingsUi(){
+  const s=state.aiSettings||{};
+  els.aiStyleSelect.value=s.teachingStyle||'親切引導';
+  els.aiDetailSelect.value=s.detailLevel||'適中';
+  els.aiLanguageSelect.value=s.language||'繁體中文';
+  els.aiStepsToggle.checked=s.showSteps!==false;
+}
+function renderSettings(){
+  syncProfileUi();
+  applyAiSettingsUi();
+}
+async function readImageAsDataUrl(file){
+  if(!file) return '';
+  if(!/^image\/(png|jpeg|webp)$/.test(file.type)) throw new Error('請選擇 PNG、JPG 或 WebP 圖片。');
+  return await new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onerror=()=>reject(new Error('圖片讀取失敗。'));
+    reader.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        const max=256, scale=Math.min(1,max/Math.max(img.width,img.height));
+        const canvas=document.createElement('canvas'); canvas.width=Math.max(1,Math.round(img.width*scale)); canvas.height=Math.max(1,Math.round(img.height*scale));
+        const ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,canvas.width,canvas.height);
+        resolve(canvas.toDataURL('image/jpeg',0.84));
+      };
+      img.onerror=()=>reject(new Error('圖片格式無法讀取。'));
+      img.src=String(reader.result);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+async function saveProfile(){
+  const name=els.profileNameInput.value.trim();
+  if(!name) return toast('顯示名稱不能是空白。','warn');
+  els.saveProfileBtn.disabled=true;
+  try{
+    const r=await api('/api/profile',{method:'PUT',body:{name,avatar:state.user.avatar||''}});
+    state.user=r.user; syncProfileUi(); toast('個人資料已更新。','success');
+  }catch(error){toast(`儲存失敗：${error.message}`,'error');}
+  finally{els.saveProfileBtn.disabled=false;}
+}
+async function handleAvatarChange(){
+  const file=els.avatarInput.files?.[0]; if(!file)return;
+  try{
+    const avatar=await readImageAsDataUrl(file);
+    const r=await api('/api/profile',{method:'PUT',body:{name:els.profileNameInput.value.trim()||state.user.name,avatar}});
+    state.user=r.user; syncProfileUi(); toast('頭像已更新。','success');
+  }catch(error){toast(`頭像更新失敗：${error.message}`,'error');}
+  finally{els.avatarInput.value='';}
+}
+async function changePassword(){
+  const current=els.currentPasswordInput.value, next=els.newPasswordInput.value, confirmNext=els.confirmPasswordInput.value;
+  if(next.length<8)return toast('新密碼至少需要 8 個字元。','warn');
+  if(next!==confirmNext)return toast('兩次新密碼不一致。','warn');
+  els.changePasswordBtn.disabled=true;
+  try{
+    const r=await api('/api/profile/password',{method:'POST',body:{currentPassword:current,newPassword:next}});
+    els.currentPasswordInput.value=''; els.newPasswordInput.value=''; els.confirmPasswordInput.value='';
+    toast(r.message||'密碼已更新。','success');
+  }catch(error){toast(`密碼更新失敗：${error.message}`,'error');}
+  finally{els.changePasswordBtn.disabled=false;}
+}
+async function saveAiSettings(){
+  const settings={teachingStyle:els.aiStyleSelect.value,detailLevel:els.aiDetailSelect.value,language:els.aiLanguageSelect.value,showSteps:els.aiStepsToggle.checked};
+  els.saveAiSettingsBtn.disabled=true; els.aiSettingsStatus.textContent='同步中…';
+  try{ const r=await api('/api/settings/ai',{method:'PUT',body:settings}); state.aiSettings=r.aiSettings; applyAiSettingsUi(); els.aiSettingsStatus.textContent='✓ 已同步'; toast('AI 老師設定已更新。','success'); }
+  catch(error){els.aiSettingsStatus.textContent='同步失敗'; toast(`AI 老師設定儲存失敗：${error.message}`,'error');}
+  finally{els.saveAiSettingsBtn.disabled=false;}
+}
 async function logout(){try{await api('/api/auth/logout',{method:'POST'});}catch{} location.reload();}
 
 async function bootstrap(){
@@ -333,6 +430,7 @@ function bindEvents() {
     if (btn.id === 'navNotes') return showScreen('notes');
     if (btn.id === 'navQuestions') return showScreen('questions');
     if (btn.id === 'navQuiz') return showScreen('quiz');
+    if (btn.id === 'navSettings' || btn.id === 'accountBtn') return showScreen('settings');
 
     // 一般操作
     if (btn.id === 'logoutBtn') return logout();
@@ -402,6 +500,11 @@ function bindEvents() {
 
   // 表單提交
   els.authForm.addEventListener('submit', submitAuth);
+  els.avatarButton.addEventListener('click', () => els.avatarInput.click());
+  els.avatarInput.addEventListener('change', handleAvatarChange);
+  els.saveProfileBtn.addEventListener('click', saveProfile);
+  els.changePasswordBtn.addEventListener('click', changePassword);
+  els.saveAiSettingsBtn.addEventListener('click', saveAiSettings);
 
   // 鍵盤快捷鍵
   els.question.addEventListener('keydown', (event) => {

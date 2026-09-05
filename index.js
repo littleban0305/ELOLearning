@@ -84,9 +84,11 @@ async function run() {
   if (!response.ok && primaryModel !== fallbackModel) {
     const errText = await response.text();
     const mayBeModelIssue =
-      response.status === 400 ||
       response.status === 404 ||
-      /model|not found|unsupported/i.test(errText);
+      ((response.status === 400 || response.status === 403) &&
+        /(unsupported model|model .*not found|is not found for api version|not available for this model)/i.test(
+          errText
+        ));
 
     if (mayBeModelIssue) {
       response = await generateWithModel(fallbackModel);

@@ -1,7 +1,7 @@
 let localKey = "";
 
 try {
-  localKey = require("./key.local").GEMINI_API_KEY || "";
+  localKey = require("./key.local.js").GEMINI_API_KEY || "";
 } catch (err) {
   if (err.code !== "MODULE_NOT_FOUND") {
     throw err;

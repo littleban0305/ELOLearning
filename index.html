@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ELOLearning</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <h1>ELOLearning</h1>
+      <p class="subtitle">Your very great learning website</p>
+    </header>
+
+    <main class="container">
+      <section class="card">
+        <h2>Gemini API 設定</h2>
+        <p>
+          這個頁面是網站本體起始版。請在本機建立 <code>.env</code>，填入你的
+          <code>GEMINI_API_KEY</code>。
+        </p>
+        <pre><code>GEMINI_API_KEY=your_real_key_here</code></pre>
+      </section>
+
+      <section class="card">
+        <h2>測試互動</h2>
+        <label for="promptInput">輸入文字</label>
+        <textarea id="promptInput" rows="4" placeholder="輸入你想學習的主題..."></textarea>
+        <button id="sendBtn">送出</button>
+        <div id="result" class="result">尚未送出內容。</div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <small>© 2026 ELOLearning</small>
+    </footer>
+
+    <script src="main.js"></script>
+  </body>
+</html>

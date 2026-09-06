@@ -201,7 +201,9 @@ a{color:inherit}
   border:1px solid rgba(143,146,255,.15);
   border-radius:30px;
 }
-.hero-glow{position:absolute;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(143,146,255,.34),rgba(143,146,255,0) 70%);filter:blur(8px);animation:heroGlow 3.8s ease-in-out infinite}
+.hero-glow{
+  display:none;
+}
 .orbit{position:absolute;border:1px solid rgba(150,165,255,.17);border-radius:50%;transform:rotate(-16deg);animation:orbitSpin 12s linear infinite}
 .orbit-a{width:210px;height:210px}.orbit-b{width:285px;height:128px;border-color:rgba(99,215,255,.12);animation-duration:15s;animation-direction:reverse}
 .hero-logo{

@@ -30,6 +30,7 @@ const els = {
   avatarButton: $('#avatarButton'), avatarInput: $('#avatarInput'), profileNameInput: $('#profileNameInput'), profileEmailInput: $('#profileEmailInput'), saveProfileBtn: $('#saveProfileBtn'),
   currentPasswordInput: $('#currentPasswordInput'), newPasswordInput: $('#newPasswordInput'), confirmPasswordInput: $('#confirmPasswordInput'), changePasswordBtn: $('#changePasswordBtn'),
   aiStyleSelect: $('#aiStyleSelect'), aiDetailSelect: $('#aiDetailSelect'), aiLanguageSelect: $('#aiLanguageSelect'), aiStepsToggle: $('#aiStepsToggle'), aiSettingsStatus: $('#aiSettingsStatus'), saveAiSettingsBtn: $('#saveAiSettingsBtn'),
+  cameraBtn: $('#cameraBtn'), cameraModal: $('#cameraModal'), cameraCloseBtn: $('#cameraCloseBtn'), cameraVideo: $('#cameraVideo'), cameraCanvas: $('#cameraCanvas'), cameraPreview: $('#cameraPreview'), cameraPreviewImage: $('#cameraPreviewImage'), cameraCaptureBtn: $('#cameraCaptureBtn'), cameraAnalyzeBtn: $('#cameraAnalyzeBtn'), cameraRetakeBtn: $('#cameraRetakeBtn'), cameraFileInput: $('#cameraFileInput'), cameraStatus: $('#cameraStatus'),
 };
 
 const ALLOWED_TAGS = new Set(['H1','H2','H3','H4','P','STRONG','EM','U','S','DEL','UL','OL','LI','BLOCKQUOTE','PRE','CODE','BR','HR','TABLE','THEAD','TBODY','TR','TH','TD']);
@@ -402,6 +403,80 @@ async function saveAiSettings(){
   catch(error){els.aiSettingsStatus.textContent='同步失敗'; toast(`AI 老師設定儲存失敗：${error.message}`,'error');}
   finally{els.saveAiSettingsBtn.disabled=false;}
 }
+let cameraStream = null;
+let cameraImageData = '';
+let cameraMimeType = 'image/jpeg';
+
+function stopCameraStream(){
+  if(cameraStream){ cameraStream.getTracks().forEach((track)=>track.stop()); cameraStream=null; }
+  if(els.cameraVideo){ els.cameraVideo.srcObject=null; }
+}
+function resetCameraUi(){
+  cameraImageData=''; cameraMimeType='image/jpeg';
+  els.cameraPreview.hidden=true; els.cameraPreviewImage.removeAttribute('src');
+  els.cameraCaptureBtn.hidden=false; els.cameraAnalyzeBtn.hidden=true; els.cameraRetakeBtn.hidden=true;
+  els.cameraStatus.textContent='準備開啟鏡頭…';
+}
+async function openCamera(){
+  resetCameraUi(); els.cameraModal.hidden=false; document.body.style.overflow='hidden';
+  if(!navigator.mediaDevices?.getUserMedia){
+    els.cameraStatus.textContent='此瀏覽器不支援鏡頭，請使用「從圖片分析」。';
+    return;
+  }
+  try{
+    cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false});
+    els.cameraVideo.srcObject=cameraStream;
+    els.cameraStatus.textContent='鏡頭已準備好，把題目或課本放進框內。';
+  }catch(error){
+    els.cameraStatus.textContent='無法開啟鏡頭，請允許相機權限或使用「從圖片分析」。';
+  }
+}
+function closeCamera(){ stopCameraStream(); els.cameraModal.hidden=true; document.body.style.overflow=''; }
+async function compressCameraImage(sourceCanvas){
+  const max=1280;
+  const scale=Math.min(1,max/Math.max(sourceCanvas.width,sourceCanvas.height));
+  const canvas=document.createElement('canvas'); canvas.width=Math.max(1,Math.round(sourceCanvas.width*scale)); canvas.height=Math.max(1,Math.round(sourceCanvas.height*scale));
+  const ctx=canvas.getContext('2d',{alpha:false}); ctx.drawImage(sourceCanvas,0,0,canvas.width,canvas.height);
+  return canvas.toDataURL('image/jpeg',0.78);
+}
+async function useCameraSource(dataUrl){
+  cameraImageData=dataUrl; cameraMimeType='image/jpeg';
+  els.cameraPreviewImage.src=dataUrl; els.cameraPreview.hidden=false;
+  els.cameraVideo.style.visibility='hidden'; els.cameraCaptureBtn.hidden=true; els.cameraRetakeBtn.hidden=false; els.cameraAnalyzeBtn.hidden=false;
+  els.cameraStatus.textContent='預覽完成。確認沒問題後交給 AI。';
+}
+function captureCameraFrame(){
+  if(!els.cameraVideo.videoWidth){ return toast('鏡頭還沒準備好，請稍等一下。','warn'); }
+  els.cameraCanvas.width=els.cameraVideo.videoWidth; els.cameraCanvas.height=els.cameraVideo.videoHeight;
+  const ctx=els.cameraCanvas.getContext('2d',{alpha:false}); ctx.drawImage(els.cameraVideo,0,0,els.cameraCanvas.width,els.cameraCanvas.height);
+  compressCameraImage(els.cameraCanvas).then(useCameraSource).catch((error)=>toast(`圖片處理失敗：${error.message}`,'error'));
+}
+function retakeCamera(){ resetCameraUi(); els.cameraVideo.style.visibility='visible'; if(cameraStream){ els.cameraStatus.textContent='重新拍攝中…'; } else { openCamera(); } }
+async function handleCameraFile(){
+  const file=els.cameraFileInput.files?.[0]; if(!file)return;
+  try{
+    if(!file.type.startsWith('image/')) throw new Error('請選擇圖片檔。');
+    const dataUrl=await new Promise((resolve,reject)=>{const reader=new FileReader(); reader.onerror=()=>reject(new Error('圖片讀取失敗。')); reader.onload=()=>resolve(String(reader.result)); reader.readAsDataURL(file);});
+    const img=await new Promise((resolve,reject)=>{const i=new Image(); i.onload=()=>resolve(i); i.onerror=()=>reject(new Error('圖片無法讀取。')); i.src=dataUrl;});
+    const canvas=document.createElement('canvas'); canvas.width=img.width; canvas.height=img.height; const ctx=canvas.getContext('2d',{alpha:false}); ctx.drawImage(img,0,0);
+    await useCameraSource(await compressCameraImage(canvas));
+  }catch(error){ toast(`圖片處理失敗：${error.message}`,'error'); }
+  finally{ els.cameraFileInput.value=''; }
+}
+async function analyzeCamera(){
+  if(state.busy || !cameraImageData) return;
+  setBusy(true,'AI 正在閱讀圖片並整理…'); closeCamera(); els.resultBox.hidden=false;
+  try{
+    const topic=els.topic.value.trim() || '智慧鏡頭學習內容';
+    const question=els.question.value.trim() || '請辨識圖片中的課程內容、題目、文字或圖表，先說明你看到了什麼，再整理成可以複習的學習重點。如果圖片是一道題目，請解釋解題思路。';
+    const data=await api('/api/camera',{method:'POST',body:{topic,question,grade:els.grade.value,subject:els.subject.value,aiSettings:state.aiSettings,image:cameraImageData}});
+    const html=sanitizeRichHtml(data.html||'<p>沒有內容</p>'); els.result.innerHTML=html;
+    const note=await createNoteFromAi({title:`${topic}｜智慧鏡頭`,topic,question,grade:els.grade.value,subject:els.subject.value,html});
+    toast(`圖片分析完成，已保存到「${note.title}」。`,'success');
+  }catch(error){ els.result.innerHTML=`<div class="error-card"><strong>圖片分析失敗。</strong><p>${escapeHtml(error.message)}</p></div>`; toast('這次圖片分析失敗。','error'); }
+  finally{ setBusy(false); }
+}
+
 async function logout(){try{await api('/api/auth/logout',{method:'POST'});}catch{} location.reload();}
 
 async function bootstrap(){
@@ -418,6 +493,7 @@ function bindEvents() {
   // 事件委派：靜態、動態產生的按鈕都走同一條路，避免後續 render 後事件失效。
   document.addEventListener('click', async (event) => {
     const target = event.target;
+    if (target?.closest?.('[data-camera-close]')) return closeCamera();
     const btn = target.closest('button, [role="button"]');
     if (!btn) return;
 
@@ -436,6 +512,11 @@ function bindEvents() {
     if (btn.id === 'logoutBtn') return logout();
     if (btn.id === 'askBtn') return ask();
     if (btn.id === 'quizBtn') return makeQuiz();
+    if (btn.id === 'cameraBtn') return openCamera();
+    if (btn.id === 'cameraCloseBtn' || btn.hasAttribute('data-camera-close')) return closeCamera();
+    if (btn.id === 'cameraCaptureBtn') return captureCameraFrame();
+    if (btn.id === 'cameraRetakeBtn') return retakeCamera();
+    if (btn.id === 'cameraAnalyzeBtn') return analyzeCamera();
     if (btn.id === 'editCurrentBtn') {
       if (state.currentNoteId) {
         showScreen('notes');
@@ -505,6 +586,8 @@ function bindEvents() {
   els.saveProfileBtn.addEventListener('click', saveProfile);
   els.changePasswordBtn.addEventListener('click', changePassword);
   els.saveAiSettingsBtn.addEventListener('click', saveAiSettings);
+  els.cameraFileInput.addEventListener('change', handleCameraFile);
+  els.cameraModal.addEventListener('click', (event)=>{ if(event.target === els.cameraModal) closeCamera(); });
 
   // 鍵盤快捷鍵
   els.question.addEventListener('keydown', (event) => {

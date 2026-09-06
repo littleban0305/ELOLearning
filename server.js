@@ -32,7 +32,7 @@ const HOST = process.env.HOST || '0.0.0.0';
 const API_KEY = String(process.env.GEMINI_API_KEY || '').trim();
 const MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30;
-const MAX_BODY = 1_000_000;
+const MAX_BODY = 3_500_000;
 const DEFAULT_AI_SETTINGS = Object.freeze({ teachingStyle: '親切引導', detailLevel: '適中', language: '繁體中文', showSteps: true });
 
 const DATA_DIR = path.join(ROOT, 'data');
@@ -288,6 +288,39 @@ async function askGemini(prompt, jsonMode = false) {
   }
 }
 
+function buildCameraPrompt({ topic, question, grade, subject, aiSettings }) {
+  const settings = normalizeAiSettings(aiSettings);
+  return `你是 ELOLearning 的 AI 老師。請分析學生提供的學習圖片。對象是台灣${grade}學生，科目是${subject}。
+
+AI 老師設定：教學風格=${settings.teachingStyle}；詳細程度=${settings.detailLevel}；需要時提供解題步驟=${settings.showSteps ? '是' : '否'}。
+
+學習主題：${topic}
+學生希望：${question}
+
+請仔細閱讀圖片中的文字、題目、圖表與版面，不要憑空補造圖片沒有提供的內容。若文字模糊或看不清楚，請明確說明不確定之處。
+
+你要直接產生「可編輯學習筆記」。
+只輸出語意化 HTML，不要 Markdown，不要 code fence，不要 HTML 外的說明。
+
+允許標籤：<h2> <h3> <h4> <p> <strong> <em> <u> <s> <ul> <ol> <li> <blockquote> <pre> <code> <table> <thead> <tbody> <tr> <th> <td> <br> <hr>
+
+要求：
+- 先用 <h2> 說明圖片主題或題目。
+- 重要概念使用 <strong>；補充內容可用 <em>。
+- 如果圖片含有比較、分類、數據或表格，優先使用完整 HTML <table>。
+- 如果是題目，整理題目資訊並給出解題思路；不要跳過關鍵步驟。
+- 最後一定有 <h3>重點整理</h3>，用 <ul> 列出 4～8 個真正值得複習的重點。
+- 再有 <h3>容易搞混</h3>，列出 1～3 個提醒。
+- 如果圖片內容不足以回答學生的問題，直接指出缺少什麼。`;
+}
+function parseImageDataUrl(value) {
+  const raw = String(value || '').trim();
+  const match = raw.match(/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/);
+  if (!match) throw Object.assign(new Error('圖片格式不支援。請使用 JPG、PNG 或 WebP。'), { status: 400 });
+  if (match[2].length > 3_000_000) throw Object.assign(new Error('圖片太大，請重新拍攝或選擇較小的圖片。'), { status: 413 });
+  return { mimeType: match[1], data: match[2] };
+}
+
 function buildAskPrompt({ topic, question, grade, subject, aiSettings }) {
   const settings = normalizeAiSettings(aiSettings);
   return `你是 ELOLearning 的 AI 老師。請用${settings.language}教學，對象是台灣${grade}學生，科目是${subject}。
@@ -514,6 +547,27 @@ async function handleApi(req, res, db, auth) {
     }
     await saveDb(db);
     return sendJson(res,200,{ok:true,added});
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/camera') {
+    const body = await readJson(req);
+    const topic = clean(body.topic || '智慧鏡頭學習內容',300);
+    const question = clean(body.question,3000);
+    const image = parseImageDataUrl(body.image);
+    if (!image) return sendJson(res,400,{error:'請提供要分析的圖片。'});
+    if (!genai) return sendJson(res,503,{error:'尚未設定 GEMINI_API_KEY。請在 .env 填入 Gemini API Key。'});
+    try {
+      const prompt = buildCameraPrompt({topic, question, grade:clean(body.grade||'國中一年級',50), subject:clean(body.subject||'其他',50), aiSettings:auth.user.aiSettings});
+      const response = await genai.models.generateContent({
+        model: MODEL,
+        contents: [{ inlineData: { mimeType: image.mimeType, data: image.data } }, { text: prompt }],
+      });
+      const raw = String(response?.text || '').trim();
+      if (!raw) throw new Error('Gemini 沒有回傳圖片分析結果。');
+      return sendJson(res,200,{ok:true,text:raw,html:normalizeRichAnswer(raw),model:MODEL});
+    } catch (error) {
+      throw normalizeAiError(error);
+    }
   }
 
   if (req.method === 'POST' && url.pathname === '/api/ask') {

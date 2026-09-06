@@ -74,7 +74,7 @@
 <label class="field-label">你想問 AI 什麼？ <small>可以指定格式</small></label>
 <textarea id="questionInput" maxlength="3000" rows="6" placeholder="例如：教我一次函數，並整理成表格，重要觀念用粗體。"></textarea>
 <div class="format-hints"><button type="button" data-prompt="請整理成表格">表格</button><button type="button" data-prompt="重要名詞請使用粗體，補充內容使用斜體">粗體＋斜體</button><button type="button" data-prompt="請用條列式整理">條列</button><button type="button" data-prompt="請分成「定義／例子／容易搞混」">分段</button></div>
-<div class="ask-footer"><span class="hint">Ctrl / Cmd + Enter 送出</span><button id="askBtn" class="primary-btn">詢問 AI ↗</button></div>
+<div class="ask-footer"><span class="hint">Ctrl / Cmd + Enter 送出</span><div class="ask-actions"><button id="cameraBtn" class="ghost-btn camera-btn" type="button">⌾ 智慧鏡頭</button><button id="askBtn" class="primary-btn">詢問 AI ↗</button></div></div>
 </div>
 <div id="loading" class="loading" hidden>
   <div class="loading-orb" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -137,6 +137,29 @@
 </div>
 </section>
 </section></main>
+</div>
+
+<div id="cameraModal" class="camera-modal" hidden>
+  <div class="camera-backdrop" data-camera-close></div>
+  <section class="camera-card panel" role="dialog" aria-modal="true" aria-labelledby="cameraTitle">
+    <div class="camera-head">
+      <div><span class="eyebrow">SMART CAMERA</span><h2 id="cameraTitle">拍下你正在看的內容</h2><p>只在你按下分析後送給 AI，不會持續監看鏡頭。</p></div>
+      <button id="cameraCloseBtn" class="icon-btn" type="button" aria-label="關閉">×</button>
+    </div>
+    <div class="camera-stage">
+      <video id="cameraVideo" autoplay playsinline muted></video>
+      <canvas id="cameraCanvas" hidden></canvas>
+      <div id="cameraPreview" class="camera-preview" hidden><img id="cameraPreviewImage" alt="拍攝預覽"></div>
+      <div class="camera-guide" aria-hidden="true"></div>
+      <div id="cameraStatus" class="camera-status">準備開啟鏡頭…</div>
+    </div>
+    <div class="camera-actions">
+      <button id="cameraRetakeBtn" class="ghost-btn" type="button" hidden>重新拍攝</button>
+      <label class="camera-upload ghost-btn"><input id="cameraFileInput" type="file" accept="image/*" capture="environment" hidden>從圖片分析</label>
+      <button id="cameraCaptureBtn" class="primary-btn" type="button">拍下來</button>
+      <button id="cameraAnalyzeBtn" class="primary-btn" type="button" hidden>交給 AI 分析</button>
+    </div>
+  </section>
 </div>
 <div id="toast" class="toast"></div>
 <script src="main.js"></script>

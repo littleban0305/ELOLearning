@@ -370,7 +370,7 @@ function syncProfileUi(){
 function applyTheme(){
   const theme=state.theme==='light'?'light':'dark';
   document.documentElement.dataset.theme=theme;
-  document.querySelectorAll('.site-logo').forEach((img)=>{ img.src=theme==='light'?'/assets/logo-light.svg':'/assets/logo.png'; });
+  document.querySelectorAll('.site-logo').forEach((img)=>{ img.src=theme==='light'?'/assets/logo-light.png':'/assets/logo.png'; });
   els.themeDarkBtn?.classList.toggle('active',theme==='dark');
   els.themeLightBtn?.classList.toggle('active',theme==='light');
 }

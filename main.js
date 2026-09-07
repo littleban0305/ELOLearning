@@ -10,6 +10,7 @@ const state = {
   currentNoteId: null,
   currentQuiz: null,
   aiSettings: { teachingStyle: '親切引導', detailLevel: '適中', language: '繁體中文', showSteps: true },
+  theme: 'dark',
   busy: false,
 };
 
@@ -30,6 +31,7 @@ const els = {
   avatarButton: $('#avatarButton'), avatarInput: $('#avatarInput'), profileNameInput: $('#profileNameInput'), profileEmailInput: $('#profileEmailInput'), saveProfileBtn: $('#saveProfileBtn'),
   currentPasswordInput: $('#currentPasswordInput'), newPasswordInput: $('#newPasswordInput'), confirmPasswordInput: $('#confirmPasswordInput'), changePasswordBtn: $('#changePasswordBtn'),
   aiStyleSelect: $('#aiStyleSelect'), aiDetailSelect: $('#aiDetailSelect'), aiLanguageSelect: $('#aiLanguageSelect'), aiStepsToggle: $('#aiStepsToggle'), aiSettingsStatus: $('#aiSettingsStatus'), saveAiSettingsBtn: $('#saveAiSettingsBtn'),
+  themeDarkBtn: $('#themeDarkBtn'), themeLightBtn: $('#themeLightBtn'),
   cameraBtn: $('#cameraBtn'), cameraModal: $('#cameraModal'), cameraCloseBtn: $('#cameraCloseBtn'), cameraVideo: $('#cameraVideo'), cameraCanvas: $('#cameraCanvas'), cameraPreview: $('#cameraPreview'), cameraPreviewImage: $('#cameraPreviewImage'), cameraCaptureBtn: $('#cameraCaptureBtn'), cameraAnalyzeBtn: $('#cameraAnalyzeBtn'), cameraRetakeBtn: $('#cameraRetakeBtn'), cameraFileInput: $('#cameraFileInput'), cameraStatus: $('#cameraStatus'),
 };
 
@@ -101,6 +103,8 @@ async function submitAuth(e) {
 async function enterApp() {
   els.authGate.hidden=true; els.appShell.hidden=false;
   state.aiSettings=state.user.aiSettings||state.aiSettings;
+  state.theme=state.user.theme||'dark';
+  applyTheme();
   els.userName.textContent=`${state.user.name} · ${state.user.email}`;
   syncProfileUi();
   applyAiSettingsUi();
@@ -334,6 +338,21 @@ function syncProfileUi(){
   els.profileEmailInput.value=state.user.email||'';
   setAvatarElements(state.user.avatar||'', state.user.name);
 }
+function applyTheme(){
+  const theme=state.theme==='light'?'light':'dark';
+  document.documentElement.dataset.theme=theme;
+  document.querySelectorAll('.site-logo').forEach((img)=>{ img.src=theme==='light'?'/assets/logo-light.svg':'/assets/logo.png'; });
+  els.themeDarkBtn?.classList.toggle('active',theme==='dark');
+  els.themeLightBtn?.classList.toggle('active',theme==='light');
+}
+async function setTheme(theme){
+  theme=theme==='light'?'light':'dark';
+  if(state.theme===theme){ applyTheme(); return; }
+  state.theme=theme; applyTheme();
+  try{ const r=await api('/api/settings/theme',{method:'PUT',body:{theme}}); state.user.theme=r.theme||theme; }
+  catch(error){ toast(`主題儲存失敗：${error.message}`,'error'); }
+}
+
 function applyAiSettingsUi(){
   const s=state.aiSettings||{};
   els.aiStyleSelect.value=s.teachingStyle||'親切引導';
@@ -586,6 +605,8 @@ function bindEvents() {
   els.saveProfileBtn.addEventListener('click', saveProfile);
   els.changePasswordBtn.addEventListener('click', changePassword);
   els.saveAiSettingsBtn.addEventListener('click', saveAiSettings);
+  els.themeDarkBtn?.addEventListener('click',()=>setTheme('dark'));
+  els.themeLightBtn?.addEventListener('click',()=>setTheme('light'));
   els.cameraFileInput.addEventListener('change', handleCameraFile);
   els.cameraModal.addEventListener('click', (event)=>{ if(event.target === els.cameraModal) closeCamera(); });
 

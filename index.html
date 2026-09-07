@@ -12,7 +12,7 @@
 <div id="authGate" class="auth-gate">
   <div class="auth-card panel">
     <div class="auth-brand">
-  <div class="css-logo css-logo-sm" aria-hidden="true"><span class="css-logo-e"><img src="/assets/logo.png" alt="ELOLearning"></span></div>
+  <div class="css-logo css-logo-sm" aria-hidden="true"><span class="css-logo-e"><img class="site-logo" src="/assets/logo.png" alt="ELOLearning"></span></div>
   <div><strong>ELOLearning</strong><small>AI 學習助手</small></div>
 </div>
     <div class="auth-tabs"><button id="loginTab" class="auth-tab active">登入</button><button id="registerTab" class="auth-tab">註冊</button></div>
@@ -23,13 +23,13 @@
       <button id="authBtn" class="primary-btn auth-submit">登入 ELOLearning</button>
       <p id="authMessage" class="auth-message"></p>
     </form>
-    <div class="auth-note">登入後即可同步保存你的重點與題目。</div>
+    
   </div>
 </div>
 
 <div id="appShell" hidden>
 <header class="topbar">
-  <a class="brand" href="#" aria-label="ELOLearning"><span class="brand-mark"><img src="/assets/logo.png" alt="ELOLearning"></span><span><strong>ELOLearning</strong><small>AI Study Space</small></span></a>
+  <a class="brand" href="#" aria-label="ELOLearning"><span class="brand-mark"><img class="site-logo" src="/assets/logo.png" alt="ELOLearning"></span><span><strong>ELOLearning</strong><small>AI Study Space</small></span></a>
   <div class="account">
     <button id="accountBtn" class="account-profile" type="button" aria-label="開啟設定"><span id="accountAvatar" class="avatar avatar-sm">E</span><span id="userName"></span></button>
     <button id="logoutBtn" class="ghost-btn">登出</button>
@@ -38,11 +38,11 @@
 <main class="app">
 <aside class="sidebar">
   <div class="nav-title">導覽</div>
-  <button id="navAsk" class="nav-btn active"><span class="nav-icon">✦</span><span class="nav-copy"><strong>問 AI</strong><small>詢問並整理內容</small></span></button>
-  <button id="navNotes" class="nav-btn"><span class="nav-icon">▣</span><span class="nav-copy"><strong>我的重點</strong><small><b id="notesCount">0 筆</b>・編輯與整理</small></span></button>
-  <button id="navQuestions" class="nav-btn"><span class="nav-icon">☷</span><span class="nav-copy"><strong>我的題目</strong><small><b id="questionsCount">0 份</b>・查看練習</small></span></button>
-  <button id="navQuiz" class="nav-btn"><span class="nav-icon">?</span><span class="nav-copy"><strong>開始出題</strong><small>根據重點生成題目</small></span></button>
-  <button id="navSettings" class="nav-btn"><span class="nav-icon">⚙</span><span class="nav-copy"><strong>設定</strong><small>個人資料與 AI 老師</small></span></button>
+  <button id="navAsk" class="nav-btn active"><span class="nav-icon">✦</span><span class="nav-copy"><strong>問 AI</strong></span></button>
+  <button id="navNotes" class="nav-btn"><span class="nav-icon">▣</span><span class="nav-copy"><strong>我的重點</strong><span class="nav-count" id="notesCount">0 筆</span></span></button>
+  <button id="navQuestions" class="nav-btn"><span class="nav-icon">☷</span><span class="nav-copy"><strong>我的題目</strong><span class="nav-count" id="questionsCount">0 份</span></span></button>
+  <button id="navQuiz" class="nav-btn"><span class="nav-icon">?</span><span class="nav-copy"><strong>開始出題</strong></span></button>
+  <button id="navSettings" class="nav-btn"><span class="nav-icon">⚙</span><span class="nav-copy"><strong>設定</strong></span></button>
 </aside>
 
 <section class="content">
@@ -51,27 +51,27 @@
   <div class="hero-copy">
     <span class="eyebrow">AI LEARNING</span>
     <h1>問 AI，<span>整理並留下重點。</span></h1>
-    <p>直接問問題，AI 會整理成好讀的內容並自動保存到你的重點。</p>
+    
     <div class="hero-features"><span>✦ AI 解答</span><span>▤ 自動整理</span><span>⌁ 雲端保存</span></div>
   </div>
   <div class="hero-visual" aria-hidden="true">
     <div class="hero-glow"></div>
     <div class="orbit orbit-a"></div>
     <div class="orbit orbit-b"></div>
-    <div class="hero-logo css-logo css-logo-lg"><span class="css-logo-e"><img src="/assets/logo.png" alt="ELOLearning"></span></div>
+    <div class="hero-logo css-logo css-logo-lg"><span class="css-logo-e"><img class="site-logo" src="/assets/logo.png" alt="ELOLearning"></span></div>
     <div class="float-chip chip-one">AI</div>
     <div class="float-chip chip-two">✦</div>
     <div class="float-chip chip-three">學習</div>
   </div>
 </div>
 <div class="panel ask-panel">
-<div class="panel-head"><div><span class="eyebrow">ASK</span><h2>你想學什麼？</h2><p>直接描述你要學的內容與格式。</p></div></div>
+<div class="panel-head"><div><span class="eyebrow">ASK</span><h2>你想學什麼？</h2></div></div>
 <div class="selectors">
 <label>年級<select id="gradeSelect"><option>國中一年級</option><option>國中二年級</option><option>國中三年級</option><option>高中</option></select></label>
 <label>科目<select id="subjectSelect"><option>國文</option><option>數學</option><option>英文</option><option>自然</option><option>社會</option><option>其他</option></select></label>
 </div>
 <label class="field-label">學習主題</label><input id="topicInput" class="topic-input" maxlength="300" placeholder="例如：岳陽樓記、一次函數、細胞構造">
-<label class="field-label">你想問 AI 什麼？ <small>可以指定格式</small></label>
+<label class="field-label">你想問 AI 什麼？ </label>
 <textarea id="questionInput" maxlength="3000" rows="6" placeholder="例如：教我一次函數，並整理成表格，重要觀念用粗體。"></textarea>
 <div class="format-hints"><button type="button" data-prompt="請整理成表格">表格</button><button type="button" data-prompt="重要名詞請使用粗體，補充內容使用斜體">粗體＋斜體</button><button type="button" data-prompt="請用條列式整理">條列</button><button type="button" data-prompt="請分成「定義／例子／容易搞混」">分段</button></div>
 <div class="ask-footer"><span class="hint">Ctrl / Cmd + Enter 送出</span><div class="ask-actions"><button id="cameraBtn" class="ghost-btn camera-btn" type="button">⌾ 智慧鏡頭</button><button id="askBtn" class="primary-btn">詢問 AI ↗</button></div></div>
@@ -84,30 +84,30 @@
 </section>
 
 <section id="notesPanel" class="panel page-panel" hidden>
-<div class="panel-head"><div><span class="eyebrow">MEMORY</span><h2>我的重點</h2><p>編輯內容會自動同步。</p></div><div class="notes-toolbar-actions"><button id="newNoteBtn" class="ghost-btn">＋ 新筆記</button><button id="clearAll" class="danger-btn">清空全部</button></div></div>
+<div class="panel-head"><div><span class="eyebrow">MEMORY</span><h2>我的重點</h2></div><div class="notes-toolbar-actions"><button id="newNoteBtn" class="ghost-btn">＋ 新筆記</button><button id="clearAll" class="danger-btn">清空全部</button></div></div>
 <div class="notes-layout"><div class="notes-list"><div id="emptyNotes" class="empty">
   <div class="empty-illustration" aria-hidden="true"><div class="empty-book"></div><div class="empty-spark spark-a">✦</div><div class="empty-spark spark-b">•</div></div>
-  <h3>還沒有重點</h3><p>先問一次 AI，第一份重點就會自動出現在這裡。</p>
+  <h3>還沒有重點</h3>
 </div><div id="history"></div></div>
 <div id="noteEditorArea" class="note-editor-area" hidden><div class="editor-header"><div><span class="eyebrow">EDITOR</span><input id="noteTitleInput" class="note-title-input" placeholder="筆記標題"><div id="noteMeta" class="note-meta"></div></div><span id="saveIndicator" class="save-indicator">已同步</span></div>
 <div class="editor-toolbar"><button type="button" data-cmd="bold" title="粗體"><strong>B</strong></button><button type="button" data-cmd="italic" title="斜體"><em>I</em></button><button type="button" data-cmd="underline" title="底線"><u>U</u></button><button type="button" data-cmd="strikeThrough" title="刪除線"><s>S</s></button><span class="toolbar-sep"></span><select id="formatBlock"><option value="p">本文</option><option value="h2">大標題</option><option value="h3">小標題</option><option value="blockquote">引用</option><option value="pre">程式碼</option></select><button type="button" data-cmd="insertUnorderedList">• 清單</button><button type="button" data-cmd="insertOrderedList">1. 清單</button><span class="toolbar-sep"></span><button type="button" id="insertTableBtn">▦ 表格</button><button type="button" data-cmd="undo">↶</button><button type="button" data-cmd="redo">↷</button></div>
 <article id="noteEditor" class="rich-editor" contenteditable="true" spellcheck="true"></article>
-<div class="editor-bottom"><span>修改會自動同步到雲端。</span><div><button id="downloadWordBtn" class="ghost-btn">下載 Word</button><button id="downloadPdfBtn" class="ghost-btn">下載 PDF</button><button id="deleteNoteBtn" class="danger-btn">刪除筆記</button></div></div></div></div>
+<div class="editor-bottom"><div><button id="downloadWordBtn" class="ghost-btn">下載 Word</button><button id="downloadPdfBtn" class="ghost-btn">下載 PDF</button><button id="deleteNoteBtn" class="danger-btn">刪除筆記</button></div></div></div></div>
 </section>
 
-<section id="quizPanel" class="panel page-panel" hidden><div class="panel-head"><div><span class="eyebrow">QUIZ</span><h2>根據我的重點出題</h2><p>AI 會讀取已保存的重點，生成後自動保存。</p></div></div>
+<section id="quizPanel" class="panel page-panel" hidden><div class="panel-head"><div><span class="eyebrow">QUIZ</span><h2>根據我的重點出題</h2></div></div>
 <div class="quiz-settings"><label>題數<select id="quizCount"><option value="5">5 題</option><option value="8">8 題</option><option value="10">10 題</option></select></label><label>難度<select id="difficultySelect"><option>簡單</option><option selected>普通</option><option>困難</option></select></label><label class="quiz-scope-label">使用哪一些筆記<select id="quizScope"><option value="all">全部我的重點</option></select></label><button id="quizBtn" class="primary-btn">讓 AI 出題 →</button></div><div id="quizBox" hidden></div></section>
 
-<section id="questionsPanel" class="panel page-panel" hidden><div class="panel-head"><div><span class="eyebrow">SAVED QUIZZES</span><h2>我的題目</h2><p>查看並重新作答。</p></div></div><div id="questionsList"></div></section>
+<section id="questionsPanel" class="panel page-panel" hidden><div class="panel-head"><div><span class="eyebrow">SAVED QUIZZES</span><h2>我的題目</h2></div></div><div id="questionsList"></div></section>
 <section id="settingsPanel" class="settings-page" hidden>
 <div class="settings-hero">
-  <div><span class="eyebrow">SETTINGS</span><h2>設定</h2><p>管理個人資料，也可以調整 AI 老師的教學方式。</p></div>
+  <div><span class="eyebrow">SETTINGS</span><h2>設定</h2></div>
 </div>
 <div class="settings-grid">
   <section class="panel settings-card profile-card">
-    <div class="settings-card-head"><div><span class="section-kicker">PERSONAL PROFILE</span><h3>個人資料</h3><p>這些資料只會套用在你的帳號。</p></div></div>
+    <div class="settings-card-head"><div><span class="section-kicker">PERSONAL PROFILE</span><h3>個人資料</h3></div></div>
     <div class="profile-layout">
-      <div class="avatar-stage"><button id="avatarButton" class="profile-avatar avatar avatar-xl" type="button" title="更換頭像">E</button><input id="avatarInput" type="file" accept="image/png,image/jpeg,image/webp" hidden><small>點擊更換頭像</small></div>
+      <div class="avatar-stage"><button id="avatarButton" class="profile-avatar avatar avatar-xl" type="button" title="更換頭像">E</button><input id="avatarInput" type="file" accept="image/png,image/jpeg,image/webp" hidden></div>
       <div class="profile-form">
         <label class="settings-field">顯示名稱<input id="profileNameInput" maxlength="60" placeholder="你的名稱"></label>
         <label class="settings-field">Email<input id="profileEmailInput" disabled></label>
@@ -116,7 +116,7 @@
     </div>
   </section>
   <section class="panel settings-card password-card">
-    <div class="settings-card-head"><div><span class="section-kicker">SECURITY</span><h3>密碼</h3><p>定期更新密碼可以讓帳號更安全。</p></div></div>
+    <div class="settings-card-head"><div><span class="section-kicker">SECURITY</span><h3>密碼</h3></div></div>
     <div class="password-form">
       <label class="settings-field">目前密碼<input id="currentPasswordInput" type="password" autocomplete="current-password" minlength="8"></label>
       <label class="settings-field">新密碼<input id="newPasswordInput" type="password" autocomplete="new-password" minlength="8"></label>
@@ -124,13 +124,20 @@
       <button id="changePasswordBtn" class="ghost-btn" type="button">更新密碼</button>
     </div>
   </section>
+  <section class="panel settings-card theme-settings-card">
+    <div class="settings-card-head"><div><span class="section-kicker">APPEARANCE</span><h3>畫面主題</h3></div></div>
+    <div class="theme-options" role="group" aria-label="畫面主題">
+      <button id="themeDarkBtn" class="theme-option" type="button" data-theme-choice="dark"><span class="theme-preview theme-preview-dark"></span><span><strong>深色</strong><small>深紫藍</small></span></button>
+      <button id="themeLightBtn" class="theme-option" type="button" data-theme-choice="light"><span class="theme-preview theme-preview-light"></span><span><strong>黑白</strong><small>白底黑字</small></span></button>
+    </div>
+  </section>
   <section class="panel settings-card ai-settings-card">
-    <div class="settings-card-head"><div><span class="section-kicker">AI TEACHER</span><h3>AI 老師設定</h3><p>之後新增的 AI 教學功能都會集中在這裡。</p></div></div>
+    <div class="settings-card-head"><div><span class="section-kicker">AI TEACHER</span><h3>AI 老師設定</h3></div></div>
     <div class="ai-settings-grid">
       <label class="settings-field">教學風格<select id="aiStyleSelect"><option value="親切引導">親切引導</option><option value="條理清晰">條理清晰</option><option value="活潑有趣">活潑有趣</option><option value="考試導向">考試導向</option></select></label>
       <label class="settings-field">回答詳細程度<select id="aiDetailSelect"><option value="精簡">精簡</option><option value="適中">適中</option><option value="詳細">詳細</option></select></label>
       <label class="settings-field">預設回覆語言<select id="aiLanguageSelect"><option value="繁體中文">繁體中文</option><option value="簡潔中文">簡潔中文</option></select></label>
-      <label class="settings-toggle"><input id="aiStepsToggle" type="checkbox"><span><strong>需要時提供解題步驟</strong><small>數學、自然等題型會優先拆解推理步驟。</small></span></label>
+      <label class="settings-toggle"><input id="aiStepsToggle" type="checkbox"><span><strong>需要時提供解題步驟</strong></span></label>
     </div>
     <div class="settings-save-row"><span id="aiSettingsStatus" class="save-indicator">已同步</span><button id="saveAiSettingsBtn" class="primary-btn" type="button">儲存 AI 老師設定</button></div>
   </section>
@@ -143,7 +150,7 @@
   <div class="camera-backdrop" data-camera-close></div>
   <section class="camera-card panel" role="dialog" aria-modal="true" aria-labelledby="cameraTitle">
     <div class="camera-head">
-      <div><span class="eyebrow">SMART CAMERA</span><h2 id="cameraTitle">拍下你正在看的內容</h2><p>只在你按下分析後送給 AI，不會持續監看鏡頭。</p></div>
+      <div><span class="eyebrow">SMART CAMERA</span><h2 id="cameraTitle">拍下你正在看的內容</h2></div>
       <button id="cameraCloseBtn" class="icon-btn" type="button" aria-label="關閉">×</button>
     </div>
     <div class="camera-stage">

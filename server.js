@@ -34,8 +34,9 @@ const MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30;
 const MAX_BODY = 3_500_000;
 const DEFAULT_AI_SETTINGS = Object.freeze({ teachingStyle: '親切引導', detailLevel: '適中', language: '繁體中文', showSteps: true });
+const DEFAULT_THEME = 'dark';
 
-const DATA_DIR = path.join(ROOT, 'data');
+const DATA_DIR = process.env.RAILWAY_VOLUME_MOUNT_PATH || path.join(ROOT, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'elolearning.json');
 let writeQueue = Promise.resolve();
 
@@ -188,8 +189,9 @@ function normalizeAiSettings(value) {
   const language = ['繁體中文','簡潔中文'].includes(s.language) ? s.language : DEFAULT_AI_SETTINGS.language;
   return { teachingStyle, detailLevel, language, showSteps: s.showSteps !== false };
 }
+function normalizeTheme(value) { return value === 'light' ? 'light' : DEFAULT_THEME; }
 function publicUser(user) {
-  return { id:user.id, email:user.email, name:user.name, avatar:user.avatar || '', aiSettings:normalizeAiSettings(user.aiSettings) };
+  return { id:user.id, email:user.email, name:user.name, avatar:user.avatar || '', aiSettings:normalizeAiSettings(user.aiSettings), theme: normalizeTheme(user.theme) };
 }
 
 function escapeHtmlServer(value = '') {
@@ -415,7 +417,7 @@ async function handleApi(req, res, db, auth) {
     if (password.length < 8) return sendJson(res,400,{error:'密碼至少需要 8 個字元。'});
     if (db.users.some((u)=>u.email===email)) return sendJson(res,409,{error:'這個 Email 已經註冊過了。'});
     const {salt, hash} = await makePasswordHash(password);
-    const user = { id:randomId(), email, name:name || email.split('@')[0], avatar:'', aiSettings:{...DEFAULT_AI_SETTINGS}, passwordHash:hash, salt, createdAt:new Date().toISOString() };
+    const user = { id:randomId(), email, name:name || email.split('@')[0], avatar:'', aiSettings:{...DEFAULT_AI_SETTINGS}, theme: DEFAULT_THEME, passwordHash:hash, salt, createdAt:new Date().toISOString() };
     db.users.push(user);
     const token = crypto.randomBytes(32).toString('base64url');
     db.sessions.push({id:randomId(), userId:user.id, tokenHash:sha256(token), expiresAt:Date.now()+SESSION_TTL_MS});
@@ -479,6 +481,13 @@ async function handleApi(req, res, db, auth) {
     auth.user.aiSettings = normalizeAiSettings(body);
     await saveDb(db);
     return sendJson(res, 200, { ok: true, aiSettings: auth.user.aiSettings });
+  }
+
+  if (req.method === 'PUT' && url.pathname === '/api/settings/theme') {
+    const body = await readJson(req);
+    auth.user.theme = normalizeTheme(body.theme);
+    await saveDb(db);
+    return sendJson(res, 200, { ok: true, theme: auth.user.theme });
   }
 
   if (req.method === 'GET' && url.pathname === '/api/data') {

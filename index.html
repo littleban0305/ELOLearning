@@ -49,8 +49,7 @@
 <section id="askPanel">
 <div class="hero">
   <div class="hero-copy">
-    <span class="eyebrow">AI LEARNING</span>
-    <h1>問 AI，<span>整理並留下重點。</span></h1>
+    <h1 id="welcomeTitle">歡迎回來！</h1>
     
     <div class="hero-features"><span>✦ AI 解答</span><span>▤ 自動整理</span><span>⌁ 雲端保存</span></div>
   </div>
@@ -65,7 +64,7 @@
   </div>
 </div>
 <div class="panel ask-panel">
-<div class="panel-head"><div><span class="eyebrow">ASK</span><h2>你想學什麼？</h2></div></div>
+<div class="panel-head"><div><h2>你想學什麼？</h2></div></div>
 <div class="selectors">
 <label>年級<select id="gradeSelect"><option>國中一年級</option><option>國中二年級</option><option>國中三年級</option><option>高中</option></select></label>
 <label>科目<select id="subjectSelect"><option>國文</option><option>數學</option><option>英文</option><option>自然</option><option>社會</option><option>其他</option></select></label>
@@ -80,30 +79,30 @@
   <div class="loading-orb" aria-hidden="true"><i></i><i></i><i></i></div>
   <div><strong>AI 正在處理…</strong><span id="loadingSub">完成後自動保存。</span></div>
 </div>
-<section id="resultBox" class="panel result-panel" hidden><div class="panel-head"><div><span class="eyebrow">AI RESULT</span><h2>這次學到的內容</h2></div><div class="result-actions"><span class="saved-tag">✓ 已同步</span><button id="editCurrentBtn" class="ghost-btn">在我的重點編輯</button></div></div><article id="result" class="rich-content"></article></section>
+<section id="resultBox" class="panel result-panel" hidden><div class="panel-head"><div><h2>這次學到的內容</h2></div><div class="result-actions"><span class="saved-tag">✓ 已同步</span><button id="editCurrentBtn" class="ghost-btn">在我的重點編輯</button></div></div><article id="result" class="rich-content"></article></section>
 </section>
 
 <section id="notesPanel" class="panel page-panel" hidden>
-<div class="panel-head"><div><span class="eyebrow">MEMORY</span><h2>我的重點</h2></div><div class="notes-toolbar-actions"><button id="newNoteBtn" class="ghost-btn">＋ 新筆記</button><button id="clearAll" class="danger-btn">清空全部</button></div></div>
+<div class="panel-head"><div><h2>我的重點</h2></div><div class="notes-toolbar-actions"><button id="newNoteBtn" class="ghost-btn">＋ 新筆記</button><button id="clearAll" class="danger-btn">清空全部</button></div></div>
 <div class="notes-layout"><div class="notes-list"><div id="emptyNotes" class="empty">
   <div class="empty-illustration" aria-hidden="true"><div class="empty-book"></div><div class="empty-spark spark-a">✦</div><div class="empty-spark spark-b">•</div></div>
   <h3>還沒有重點</h3>
 </div><div id="history"></div></div>
-<div id="noteEditorArea" class="note-editor-area" hidden><div class="editor-header"><div><span class="eyebrow">EDITOR</span><input id="noteTitleInput" class="note-title-input" placeholder="筆記標題"><div id="noteMeta" class="note-meta"></div></div><span id="saveIndicator" class="save-indicator">已同步</span></div>
+<div id="noteEditorArea" class="note-editor-area" hidden><div class="editor-header"><div><input id="noteTitleInput" class="note-title-input" placeholder="筆記標題"><div id="noteMeta" class="note-meta"></div></div><span id="saveIndicator" class="save-indicator">已同步</span></div>
 <div class="editor-toolbar"><button type="button" data-cmd="bold" title="粗體"><strong>B</strong></button><button type="button" data-cmd="italic" title="斜體"><em>I</em></button><button type="button" data-cmd="underline" title="底線"><u>U</u></button><button type="button" data-cmd="strikeThrough" title="刪除線"><s>S</s></button><span class="toolbar-sep"></span><select id="formatBlock"><option value="p">本文</option><option value="h2">大標題</option><option value="h3">小標題</option><option value="blockquote">引用</option><option value="pre">程式碼</option></select><button type="button" data-cmd="insertUnorderedList">• 清單</button><button type="button" data-cmd="insertOrderedList">1. 清單</button><span class="toolbar-sep"></span><button type="button" id="insertTableBtn">▦ 表格</button><button type="button" data-cmd="undo">↶</button><button type="button" data-cmd="redo">↷</button></div>
 <article id="noteEditor" class="rich-editor" contenteditable="true" spellcheck="true"></article>
 <div class="editor-bottom"><div><button id="downloadWordBtn" class="ghost-btn">下載 Word</button><button id="downloadPdfBtn" class="ghost-btn">下載 PDF</button><button id="deleteNoteBtn" class="danger-btn">刪除筆記</button></div></div></div></div>
 </section>
 
-<section id="quizPanel" class="panel page-panel" hidden><div class="panel-head"><div><span class="eyebrow">QUIZ</span><h2>根據我的重點出題</h2></div></div>
+<section id="quizPanel" class="panel page-panel" hidden><div class="panel-head"><div><h2>根據我的重點出題</h2></div></div>
 <div class="quiz-settings"><label>題數<select id="quizCount"><option value="5">5 題</option><option value="8">8 題</option><option value="10">10 題</option></select></label><label>難度<select id="difficultySelect"><option>簡單</option><option selected>普通</option><option>困難</option></select></label><label class="quiz-scope-label">使用哪一些筆記<select id="quizScope"><option value="all">全部我的重點</option></select></label><button id="quizBtn" class="primary-btn">讓 AI 出題 →</button></div><div id="quizBox" hidden></div>
 
-<section class="quick-quiz-section" aria-labelledby="quickQuizTitle"><div class="quick-quiz-heading"><div><span class="eyebrow">QUICK FIRE</span><h2 id="quickQuizTitle">快問快答</h2></div></div><div class="quick-quiz-settings"><label>練習時間<select id="quickQuizMinutes"><option value="3">3 分鐘</option><option value="5" selected>5 分鐘</option><option value="10">10 分鐘</option><option value="15">15 分鐘</option></select></label><label>題數<select id="quickQuizCount"><option value="3">3 題</option><option value="5" selected>5 題</option><option value="8">8 題</option><option value="10">10 題</option></select></label><label>難度<select id="quickQuizDifficulty"><option>簡單</option><option selected>普通</option><option>困難</option></select></label><label class="quick-quiz-scope">使用哪一些筆記<select id="quickQuizScope"><option value="all">全部我的重點</option></select></label><button id="quickQuizBtn" class="primary-btn" type="button">開始限時挑戰</button></div><div id="quickQuizBox" hidden></div></section></section>
+<section class="quick-quiz-section" aria-labelledby="quickQuizTitle"><div class="quick-quiz-heading"><div><h2 id="quickQuizTitle">快問快答</h2></div></div><div class="quick-quiz-settings"><label>練習時間<select id="quickQuizMinutes"><option value="3">3 分鐘</option><option value="5" selected>5 分鐘</option><option value="10">10 分鐘</option><option value="15">15 分鐘</option></select></label><label>題數<select id="quickQuizCount"><option value="3">3 題</option><option value="5" selected>5 題</option><option value="8">8 題</option><option value="10">10 題</option></select></label><label>難度<select id="quickQuizDifficulty"><option>簡單</option><option selected>普通</option><option>困難</option></select></label><label class="quick-quiz-scope">使用哪一些筆記<select id="quickQuizScope"><option value="all">全部我的重點</option></select></label><button id="quickQuizBtn" class="primary-btn" type="button">開始限時挑戰</button></div><div id="quickQuizBox" hidden></div></section></section>
 
-<section id="questionsPanel" class="panel page-panel" hidden><div class="panel-head"><div><span class="eyebrow">SAVED QUIZZES</span><h2>我的題目</h2></div></div><div id="questionsList"></div></section>
+<section id="questionsPanel" class="panel page-panel" hidden><div class="panel-head"><div><h2>我的題目</h2></div></div><div id="questionsList"></div></section>
 <section id="settingsPanel" class="settings-page" hidden>
 <div class="settings-hero">
-  <div><span class="eyebrow">SETTINGS</span><h2>設定</h2></div>
+  <div><h2>設定</h2></div>
 </div>
 <div class="settings-grid">
   <section class="panel settings-card profile-card">
@@ -152,7 +151,7 @@
   <div class="camera-backdrop" data-camera-close></div>
   <section class="camera-card panel" role="dialog" aria-modal="true" aria-labelledby="cameraTitle">
     <div class="camera-head">
-      <div><span class="eyebrow">SMART CAMERA</span><h2 id="cameraTitle">拍下你正在看的內容</h2></div>
+      <div><h2 id="cameraTitle">拍下你正在看的內容</h2></div>
       <button id="cameraCloseBtn" class="icon-btn" type="button" aria-label="關閉">×</button>
     </div>
     <div class="camera-stage">

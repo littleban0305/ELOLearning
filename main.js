@@ -25,7 +25,7 @@ const els = {
   navAsk: $('#navAsk'), navNotes: $('#navNotes'), navQuestions: $('#navQuestions'), navQuiz: $('#navQuiz'), navSettings: $('#navSettings'),
   askPanel: $('#askPanel'), notesPanel: $('#notesPanel'), questionsPanel: $('#questionsPanel'), quizPanel: $('#quizPanel'), settingsPanel: $('#settingsPanel'),
   topic: $('#topicInput'), question: $('#questionInput'), grade: $('#gradeSelect'), subject: $('#subjectSelect'),
-  askBtn: $('#askBtn'), result: $('#result'), resultBox: $('#resultBox'), loading: $('#loading'),
+  askBtn: $('#askBtn'), result: $('#result'), resultBox: $('#resultBox'), welcomeTitle: $('#welcomeTitle'), loading: $('#loading'),
   history: $('#history'), emptyNotes: $('#emptyNotes'), notesCount: $('#notesCount'), questionsCount: $('#questionsCount'),
   editorArea: $('#noteEditorArea'), editor: $('#noteEditor'), titleInput: $('#noteTitleInput'), noteMeta: $('#noteMeta'),
   saveIndicator: $('#saveIndicator'), formatBlock: $('#formatBlock'), quizBox: $('#quizBox'), quizCount: $('#quizCount'), difficulty: $('#difficultySelect'),
@@ -310,7 +310,7 @@ async function makeQuickQuiz(){
 }
 function renderQuickQuiz(quiz,subject){
   stopQuickQuizTimer();state.currentQuickQuiz={...quiz,subject,submitted:false,deadline:Date.now()+quiz.timeLimitSeconds*1000};els.quickQuizBox.hidden=false;
-  els.quickQuizBox.innerHTML=`<div class="quick-quiz-play"><div class="quiz-head"><div><span class="eyebrow">AI TIMED QUIZ</span><h2>限時作答</h2></div><div id="quickQuizTimer" class="quick-quiz-timer">${quickQuizTime(quiz.timeLimitSeconds)}</div></div><p class="quick-quiz-note">這是 AI 依題目難度安排的時間。時間到會自動交卷並由 AI 批改。</p><div id="quickQuizList"></div><div class="quick-quiz-actions"><button id="submitQuickQuiz" class="primary-btn" type="button">交給 AI 批改</button></div><div id="quickQuizScore" class="quiz-score" hidden></div></div>`;
+  els.quickQuizBox.innerHTML=`<div class="quick-quiz-play"><div class="quiz-head"><div><h2>限時作答</h2></div><div id="quickQuizTimer" class="quick-quiz-timer">${quickQuizTime(quiz.timeLimitSeconds)}</div></div><p class="quick-quiz-note">這是 AI 依題目難度安排的時間。時間到會自動交卷並由 AI 批改。</p><div id="quickQuizList"></div><div class="quick-quiz-actions"><button id="submitQuickQuiz" class="primary-btn" type="button">交給 AI 批改</button></div><div id="quickQuizScore" class="quiz-score" hidden></div></div>`;
   const list=$('#quickQuizList');quiz.questions.forEach((q,qi)=>{const card=document.createElement('section');card.className='quiz-card';card.innerHTML=`<div class="quiz-q"><b>${qi+1}</b><span>${escapeHtml(q.question)}</span></div><div class="options">${q.options.map((o,oi)=>`<label><input type="radio" name="quickQ${qi}" value="${oi}"><span>${escapeHtml(o)}</span></label>`).join('')}</div><div class="explanation" id="quickExp${qi}" hidden></div>`;list.appendChild(card);});
   updateQuickQuizTimer();state.quickQuizTimer=setInterval(updateQuickQuizTimer,250);els.quickQuizBox.scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -323,7 +323,7 @@ async function submitQuickQuiz(expired=false){
 }
 function renderQuiz(quiz,setId){
   state.currentQuiz={...quiz,setId,submitted:false}; els.quizBox.hidden=false;
-  els.quizBox.innerHTML=`<div class="quiz-head"><div><span class="eyebrow">AI QUIZ</span><h2>開始作答</h2></div><button id="submitQuiz" class="primary-btn">交卷</button></div><div id="quizList"></div><div id="quizScore" class="quiz-score" hidden></div>`;
+  els.quizBox.innerHTML=`<div class="quiz-head"><div><h2>開始作答</h2></div><button id="submitQuiz" class="primary-btn">交卷</button></div><div id="quizList"></div><div id="quizScore" class="quiz-score" hidden></div>`;
   const list=$('#quizList');
   quiz.questions.forEach((q,qi)=>{
     const card=document.createElement('section');card.className='quiz-card';
@@ -343,7 +343,7 @@ function renderQuestions(){
   if(!state.questionSets.length){els.questionsList.innerHTML='<div class="empty"><div>☷</div><h3>還沒有保存的題目</h3><p>到「開始出題」讓 AI 根據你的重點產生第一份練習。</p></div>';return;}
   [...state.questionSets].forEach(set=>{
     const card=document.createElement('article');card.className='saved-question-card'; card.dataset.questionId=set.id;
-    card.innerHTML=`<div class="saved-question-main"><span class="eyebrow">SAVED QUIZ</span><h3>${escapeHtml(set.title)}</h3><p>${escapeHtml(set.subject)} · ${escapeHtml(set.difficulty)} · ${set.count} 題 · ${new Date(set.createdAt).toLocaleString()}</p>${set.lastScore!==null&&set.lastScore!==undefined?`<span class="saved-score">上次 ${set.lastScore} / ${set.count}</span>`:''}</div><div class="saved-question-actions"><button class="ghost-btn do-open">重新作答</button><button class="danger-btn do-delete">刪除</button></div>`;
+    card.innerHTML=`<div class="saved-question-main"><h3>${escapeHtml(set.title)}</h3><p>${escapeHtml(set.subject)} · ${escapeHtml(set.difficulty)} · ${set.count} 題 · ${new Date(set.createdAt).toLocaleString()}</p>${set.lastScore!==null&&set.lastScore!==undefined?`<span class="saved-score">上次 ${set.lastScore} / ${set.count}</span>`:''}</div><div class="saved-question-actions"><button class="ghost-btn do-open">重新作答</button><button class="danger-btn do-delete">刪除</button></div>`;
     els.questionsList.appendChild(card);
   });
 }
@@ -363,6 +363,7 @@ function setAvatarElements(src,name){
 function syncProfileUi(){
   if(!state.user) return;
   els.userName.textContent=`${state.user.name} · ${state.user.email}`;
+  els.welcomeTitle.textContent=`歡迎回來，${state.user.name}！`;
   els.profileNameInput.value=state.user.name||'';
   els.profileEmailInput.value=state.user.email||'';
   setAvatarElements(state.user.avatar||'', state.user.name);

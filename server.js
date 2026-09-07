@@ -258,6 +258,24 @@ const QUIZ_RESPONSE_SCHEMA = {
   },
   required: ['questions'],
 };
+const QUICK_QUIZ_RESPONSE_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    timeLimitSeconds: { type: 'integer', minimum: 60, maximum: 1800 },
+    questions: QUIZ_RESPONSE_SCHEMA.properties.questions,
+  },
+  required: ['timeLimitSeconds', 'questions'],
+};
+const QUICK_GRADE_RESPONSE_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    score: { type: 'integer', minimum: 0 },
+    feedback: { type: 'string' },
+  },
+  required: ['score', 'feedback'],
+};
 
 
 function normalizeAiError(error) {
@@ -268,16 +286,16 @@ function normalizeAiError(error) {
   return Object.assign(new Error(message), { status: 502 });
 }
 
-async function askGemini(prompt, jsonMode = false) {
+async function askGemini(prompt, responseSchema = null) {
   if (!genai) throw Object.assign(new Error('尚未設定 GEMINI_API_KEY。請在 .env 填入 Gemini API Key。'), { status: 503 });
   try {
     const response = await genai.models.generateContent({
       model: MODEL,
       contents: prompt,
-      ...(jsonMode ? {
+      ...(responseSchema ? {
         config: {
           responseMimeType: 'application/json',
-          responseJsonSchema: QUIZ_RESPONSE_SCHEMA,
+          responseJsonSchema: responseSchema,
           temperature: 0.6,
         },
       } : {}),
@@ -372,6 +390,21 @@ ${notes}
 - 選項不要明顯洩漏答案。
 - 解析簡短清楚。
 - 不要超過要求題數。`;
+}
+
+function buildQuickQuizPrompt({ notes, count, minutes, difficulty, subject, aiSettings }) {
+  return `${buildQuizPrompt({ notes, count, difficulty, subject, aiSettings })}
+
+這是限時快問快答。學生希望練習約 ${minutes} 分鐘、${count} 題。根據題目閱讀與思考難度，設定合適的 timeLimitSeconds（60 到 ${Math.min(minutes * 60, 1800)} 秒）；時間可以比學生的參考時間短，但不可超過它。`;
+}
+
+function buildQuickGradePrompt({ questions, answers, subject }) {
+  return `你是 ELOLearning 的 AI 老師，正在批改一份 ${subject} 快問快答。
+
+依照每題 answer（正確選項索引）與學生 selectedAnswer（學生選擇）嚴格計分；未作答為 -1。score 必須等於答對題數，介於 0 到 ${questions.length}。feedback 請用繁體中文寫 2 到 4 句：肯定表現、指出最需要複習的概念，語氣直接溫和。
+
+【題目與作答】
+${questions.map((question, index) => `${index + 1}. ${question.question}\n正確答案：${question.answer}\n學生作答：${answers[index] ?? -1}\n解析：${question.explanation}`).join('\n\n')}`;
 }
 
 function parseQuiz(raw) {
@@ -598,7 +631,7 @@ async function handleApi(req, res, db, auth) {
     const count = Math.min(Math.max(Number(body.count)||5,3),10);
     const difficulty = clean(body.difficulty||'普通',20);
     const subject = clean(body.subject||'綜合',50);
-    const raw = await askGemini(buildQuizPrompt({notes:plainNotes(ownedNotes),count,difficulty,subject,aiSettings:auth.user.aiSettings}),true);
+    const raw = await askGemini(buildQuizPrompt({notes:plainNotes(ownedNotes),count,difficulty,subject,aiSettings:auth.user.aiSettings}),QUIZ_RESPONSE_SCHEMA);
     const quiz = parseQuiz(raw);
     const quizSet = {
       id:randomId(),userId:auth.user.id,title:clean(body.title||`AI 練習｜${new Date().toLocaleDateString('zh-TW')}`,200),
@@ -608,6 +641,33 @@ async function handleApi(req, res, db, auth) {
     db.questions.push(quizSet);
     await saveDb(db);
     return sendJson(res,200,{ok:true,quiz,questionSet:quizSet});
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/quick-quiz') {
+    const body = await readJson(req);
+    const noteIds = Array.isArray(body.noteIds) ? body.noteIds.slice(0,100) : [];
+    const ownedNotes = db.notes.filter((n)=>n.userId===auth.user.id && (noteIds.length ? noteIds.includes(n.id) : true));
+    if (!ownedNotes.length) return sendJson(res,400,{error:'目前沒有學習重點，先問 AI 學一個主題吧。'});
+    const count = Math.min(Math.max(Number(body.count)||5,3),10);
+    const minutes = Math.min(Math.max(Number(body.minutes)||5,1),30);
+    const difficulty = clean(body.difficulty||'普通',20);
+    const subject = clean(body.subject||'綜合',50);
+    const raw = await askGemini(buildQuickQuizPrompt({notes:plainNotes(ownedNotes),count,minutes,difficulty,subject,aiSettings:auth.user.aiSettings}),QUICK_QUIZ_RESPONSE_SCHEMA);
+    const quiz = parseQuiz(raw);
+    const requestedSeconds = minutes * 60;
+    const timeLimitSeconds = Math.min(Math.max(Number(JSON.parse(raw).timeLimitSeconds)||requestedSeconds,60),requestedSeconds);
+    return sendJson(res,200,{ok:true,quiz:{questions:quiz.questions,timeLimitSeconds},timeLimitSeconds});
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/quick-quiz/grade') {
+    const body = await readJson(req);
+    const questions = Array.isArray(body.questions) ? body.questions.slice(0,10) : [];
+    const answers = Array.isArray(body.answers) ? body.answers.slice(0,10).map((answer)=>Number.isInteger(answer) && answer >= 0 && answer <= 3 ? answer : -1) : [];
+    if (!questions.length) return sendJson(res,400,{error:'沒有可批改的題目。'});
+    const raw = await askGemini(buildQuickGradePrompt({questions,answers,subject:clean(body.subject||'綜合',50)}),QUICK_GRADE_RESPONSE_SCHEMA);
+    const grade = JSON.parse(raw);
+    const score = Math.min(Math.max(Number(grade.score)||0,0),questions.length);
+    return sendJson(res,200,{ok:true,score,feedback:clean(grade.feedback,1200)});
   }
 
   if (req.method === 'DELETE' && url.pathname.startsWith('/api/questions/')) {

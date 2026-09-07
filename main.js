@@ -9,6 +9,8 @@ const state = {
   questionSets: [],
   currentNoteId: null,
   currentQuiz: null,
+  currentQuickQuiz: null,
+  quickQuizTimer: null,
   aiSettings: { teachingStyle: '親切引導', detailLevel: '適中', language: '繁體中文', showSteps: true },
   theme: 'dark',
   busy: false,
@@ -28,6 +30,7 @@ const els = {
   editorArea: $('#noteEditorArea'), editor: $('#noteEditor'), titleInput: $('#noteTitleInput'), noteMeta: $('#noteMeta'),
   saveIndicator: $('#saveIndicator'), formatBlock: $('#formatBlock'), quizBox: $('#quizBox'), quizCount: $('#quizCount'), difficulty: $('#difficultySelect'),
   quizScope: $('#quizScope'), quizBtn: $('#quizBtn'), questionsList: $('#questionsList'), toast: $('#toast'),
+  quickQuizBox: $('#quickQuizBox'), quickQuizMinutes: $('#quickQuizMinutes'), quickQuizCount: $('#quickQuizCount'), quickQuizDifficulty: $('#quickQuizDifficulty'), quickQuizScope: $('#quickQuizScope'), quickQuizBtn: $('#quickQuizBtn'),
   avatarButton: $('#avatarButton'), avatarInput: $('#avatarInput'), profileNameInput: $('#profileNameInput'), profileEmailInput: $('#profileEmailInput'), saveProfileBtn: $('#saveProfileBtn'),
   currentPasswordInput: $('#currentPasswordInput'), newPasswordInput: $('#newPasswordInput'), confirmPasswordInput: $('#confirmPasswordInput'), changePasswordBtn: $('#changePasswordBtn'),
   aiStyleSelect: $('#aiStyleSelect'), aiDetailSelect: $('#aiDetailSelect'), aiLanguageSelect: $('#aiLanguageSelect'), aiStepsToggle: $('#aiStepsToggle'), aiSettingsStatus: $('#aiSettingsStatus'), saveAiSettingsBtn: $('#saveAiSettingsBtn'),
@@ -147,7 +150,9 @@ function updateCounts() {
   els.questionsCount.textContent=`${state.questionSets.length} 份`;
 }
 function updateQuizScope() {
-  els.quizScope.innerHTML='<option value="all">全部我的重點</option>'+state.notes.map(n=>`<option value="${escapeHtml(n.id)}">${escapeHtml(n.title)}</option>`).join('');
+  const options='<option value="all">全部我的重點</option>'+state.notes.map(n=>`<option value="${escapeHtml(n.id)}">${escapeHtml(n.title)}</option>`).join('');
+  els.quizScope.innerHTML=options;
+  els.quickQuizScope.innerHTML=options;
 }
 
 function showScreen(name) {
@@ -163,7 +168,7 @@ function showScreen(name) {
 }
 
 function setBusy(value,text='AI 正在思考…') {
-  state.busy=value; els.askBtn.disabled=value; els.quizBtn.disabled=value;
+  state.busy=value; els.askBtn.disabled=value; els.quizBtn.disabled=value; els.quickQuizBtn.disabled=value;
   els.loading.hidden=!value; $('#loading strong').textContent=text;
 }
 function renderHistory() {
@@ -291,6 +296,30 @@ async function makeQuiz(){
     state.questionSets.unshift(r.questionSet); updateCounts(); renderQuestions(); renderQuiz(r.quiz,r.questionSet.id); toast('題目已保存到「我的題目」。','success');
   } catch(err){toast(`出題失敗：${err.message}`,'error');}
   finally{setBusy(false);}
+}
+function quickQuizTime(seconds){const safe=Math.max(0,seconds);return `${String(Math.floor(safe/60)).padStart(2,'0')}:${String(safe%60).padStart(2,'0')}`;}
+function stopQuickQuizTimer(){if(state.quickQuizTimer){clearInterval(state.quickQuizTimer);state.quickQuizTimer=null;}}
+function updateQuickQuizTimer(){const quiz=state.currentQuickQuiz;if(!quiz||quiz.submitted)return;const remaining=Math.max(0,Math.ceil((quiz.deadline-Date.now())/1000));const timer=$('#quickQuizTimer');if(timer){timer.textContent=quickQuizTime(remaining);timer.classList.toggle('urgent',remaining<=30);}if(!remaining)submitQuickQuiz(true);}
+async function makeQuickQuiz(){
+  if(state.busy)return;if(!state.notes.length)return toast('先保存一些學習重點，再來出題。','warn');
+  const scope=els.quickQuizScope.value;const selected=scope==='all'?state.notes:state.notes.filter(n=>n.id===scope);
+  if(!selected.length)return toast('這份筆記不存在。','warn');
+  setBusy(true,'AI 正在安排限時挑戰…');
+  try{const r=await api('/api/quick-quiz',{method:'POST',body:{noteIds:selected.map(n=>n.id),count:Number(els.quickQuizCount.value),minutes:Number(els.quickQuizMinutes.value),difficulty:els.quickQuizDifficulty.value,subject:selected[0]?.subject||'綜合'}});renderQuickQuiz(r.quiz,selected[0]?.subject||'綜合');}
+  catch(err){toast(`快問快答出題失敗：${err.message}`,'error');}finally{setBusy(false);}
+}
+function renderQuickQuiz(quiz,subject){
+  stopQuickQuizTimer();state.currentQuickQuiz={...quiz,subject,submitted:false,deadline:Date.now()+quiz.timeLimitSeconds*1000};els.quickQuizBox.hidden=false;
+  els.quickQuizBox.innerHTML=`<div class="quick-quiz-play"><div class="quiz-head"><div><span class="eyebrow">AI TIMED QUIZ</span><h2>限時作答</h2></div><div id="quickQuizTimer" class="quick-quiz-timer">${quickQuizTime(quiz.timeLimitSeconds)}</div></div><p class="quick-quiz-note">這是 AI 依題目難度安排的時間。時間到會自動交卷並由 AI 批改。</p><div id="quickQuizList"></div><div class="quick-quiz-actions"><button id="submitQuickQuiz" class="primary-btn" type="button">交給 AI 批改</button></div><div id="quickQuizScore" class="quiz-score" hidden></div></div>`;
+  const list=$('#quickQuizList');quiz.questions.forEach((q,qi)=>{const card=document.createElement('section');card.className='quiz-card';card.innerHTML=`<div class="quiz-q"><b>${qi+1}</b><span>${escapeHtml(q.question)}</span></div><div class="options">${q.options.map((o,oi)=>`<label><input type="radio" name="quickQ${qi}" value="${oi}"><span>${escapeHtml(o)}</span></label>`).join('')}</div><div class="explanation" id="quickExp${qi}" hidden></div>`;list.appendChild(card);});
+  updateQuickQuizTimer();state.quickQuizTimer=setInterval(updateQuickQuizTimer,250);els.quickQuizBox.scrollIntoView({behavior:'smooth',block:'start'});
+}
+async function submitQuickQuiz(expired=false){
+  const quiz=state.currentQuickQuiz;if(!quiz||quiz.submitted)return;quiz.submitted=true;stopQuickQuizTimer();
+  const answers=quiz.questions.map((question,index)=>{const checked=$(`input[name="quickQ${index}"]:checked`);return checked?Number(checked.value):-1;});$$('#quickQuizList input').forEach((input)=>input.disabled=true);
+  const submit=$('#submitQuickQuiz');if(submit){submit.disabled=true;submit.textContent='AI 批改中…';}const scoreBox=$('#quickQuizScore');scoreBox.hidden=false;scoreBox.innerHTML='<span>AI 正在核對答案並整理回饋…</span>';
+  try{const r=await api('/api/quick-quiz/grade',{method:'POST',body:{questions:quiz.questions,answers,subject:quiz.subject}});quiz.questions.forEach((question,index)=>{const exp=$(`#quickExp${index}`);const chosen=answers[index];exp.hidden=false;exp.innerHTML=`${chosen===question.answer?'✓ 答對！':'✕ 答案：'} ${escapeHtml(question.options[question.answer])}<br>${escapeHtml(question.explanation||'')}`;});scoreBox.innerHTML=`<strong>${r.score} / ${quiz.questions.length}</strong><span>${expired?'時間到，已自動交卷。 ':''}${escapeHtml(r.feedback)}</span>`;}
+  catch(error){scoreBox.innerHTML=`<strong>批改失敗</strong><span>${escapeHtml(error.message)}</span>`;}
 }
 function renderQuiz(quiz,setId){
   state.currentQuiz={...quiz,setId,submitted:false}; els.quizBox.hidden=false;
@@ -531,6 +560,7 @@ function bindEvents() {
     if (btn.id === 'logoutBtn') return logout();
     if (btn.id === 'askBtn') return ask();
     if (btn.id === 'quizBtn') return makeQuiz();
+    if (btn.id === 'quickQuizBtn') return makeQuickQuiz();
     if (btn.id === 'cameraBtn') return openCamera();
     if (btn.id === 'cameraCloseBtn' || btn.hasAttribute('data-camera-close')) return closeCamera();
     if (btn.id === 'cameraCaptureBtn') return captureCameraFrame();
@@ -596,6 +626,7 @@ function bindEvents() {
 
     // 動態產生的交卷按鈕
     if (btn.id === 'submitQuiz') return submitQuiz();
+    if (btn.id === 'submitQuickQuiz') return submitQuickQuiz();
   });
 
   // 表單提交

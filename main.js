@@ -317,8 +317,9 @@ function renderQuickQuiz(quiz,subject){
 async function submitQuickQuiz(expired=false){
   const quiz=state.currentQuickQuiz;if(!quiz||quiz.submitted)return;quiz.submitted=true;stopQuickQuizTimer();
   const answers=quiz.questions.map((question,index)=>{const checked=$(`input[name="quickQ${index}"]:checked`);return checked?Number(checked.value):-1;});$$('#quickQuizList input').forEach((input)=>input.disabled=true);
+  const score=renderQuizAnswers(quiz.questions,answers,'quickExp');
   const submit=$('#submitQuickQuiz');if(submit){submit.disabled=true;submit.textContent='AI 批改中…';}const scoreBox=$('#quickQuizScore');scoreBox.hidden=false;scoreBox.innerHTML='<span>AI 正在核對答案並整理回饋…</span>';
-  try{const r=await api('/api/quick-quiz/grade',{method:'POST',body:{questions:quiz.questions,answers,subject:quiz.subject}});quiz.questions.forEach((question,index)=>{const exp=$(`#quickExp${index}`);const chosen=answers[index];exp.hidden=false;exp.innerHTML=`${chosen===question.answer?'✓ 答對！':'✕ 答案：'} ${escapeHtml(question.options[question.answer])}<br>${escapeHtml(question.explanation||'')}`;});scoreBox.innerHTML=`<strong>${r.score} / ${quiz.questions.length}</strong><span>${expired?'時間到，已自動交卷。 ':''}${escapeHtml(r.feedback)}</span>`;}
+  try{const r=await api('/api/quick-quiz/grade',{method:'POST',body:{questions:quiz.questions,answers,subject:quiz.subject}});scoreBox.innerHTML=`<strong>${score} / ${quiz.questions.length}</strong><span>${expired?'時間到，已自動交卷。 ':''}${escapeHtml(r.feedback)}</span>`;}
   catch(error){scoreBox.innerHTML=`<strong>批改失敗</strong><span>${escapeHtml(error.message)}</span>`;}
 }
 function renderQuiz(quiz,setId){
@@ -331,10 +332,22 @@ function renderQuiz(quiz,setId){
     list.appendChild(card);
   });
 }
+function renderQuizAnswers(questions,answers,prefix='exp'){
+  let score=0;
+  questions.forEach((question,index)=>{
+    const chosen=answers[index] ?? -1;
+    if(chosen===question.answer)score++;
+    const exp=$(`#${prefix}${index}`);
+    if(!exp)return;
+    exp.hidden=false;
+    exp.innerHTML=`${chosen===question.answer?'✓ 答對！':'✕ 答案：'} ${escapeHtml(question.options[question.answer])}<br>${escapeHtml(question.explanation||'')}`;
+  });
+  return score;
+}
 async function submitQuiz(){
   const quiz=state.currentQuiz;if(!quiz||quiz.submitted)return;
-  let score=0;
-  quiz.questions.forEach((q,i)=>{const checked=$(`input[name="q${i}"]:checked`);const chosen=checked?Number(checked.value):-1;if(chosen===q.answer)score++;const exp=$(`#exp${i}`);exp.hidden=false;exp.innerHTML=`${chosen===q.answer?'✓ 答對！':'✕ 答案：'} ${escapeHtml(q.options[q.answer])}<br>${escapeHtml(q.explanation||'')}`;});
+  const answers=quiz.questions.map((question,index)=>{const checked=$(`input[name="q${index}"]:checked`);return checked?Number(checked.value):-1;});
+  const score=renderQuizAnswers(quiz.questions,answers);
   quiz.submitted=true;$(`#quizScore`).hidden=false;$(`#quizScore`).innerHTML=`<strong>${score} / ${quiz.questions.length}</strong><span>完成這份練習。答案與解析已顯示。</span>`;
   try{await api(`/api/questions/${encodeURIComponent(quiz.setId)}/score`,{method:'POST',body:{score}});const set=state.questionSets.find(x=>x.id===quiz.setId);if(set){set.lastScore=score;set.lastAnsweredAt=new Date().toISOString();renderQuestions();}}catch{}
 }

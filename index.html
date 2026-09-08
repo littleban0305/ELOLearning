@@ -95,7 +95,7 @@
 </section>
 
 <section id="quizPanel" class="panel page-panel" hidden><div class="panel-head"><div><h2>根據我的重點出題</h2></div></div>
-<div class="quiz-settings"><label>題數<select id="quizCount"><option value="5">5 題</option><option value="8">8 題</option><option value="10">10 題</option></select></label><label>難度<select id="difficultySelect"><option>簡單</option><option selected>普通</option><option>困難</option></select></label><label class="quiz-scope-label">使用哪一些筆記<select id="quizScope"><option value="all">全部我的重點</option></select></label><button id="quizBtn" class="primary-btn">讓 AI 出題 →</button></div><div id="quizBox" hidden></div>
+<div class="quiz-settings quiz-settings-modern"><label>題數<select id="quizCount"><option value="5">5 題</option><option value="8">8 題</option><option value="10">10 題</option></select></label><label>難度<select id="difficultySelect"><option>簡單</option><option selected>普通</option><option>困難</option></select></label><label class="quiz-scope-label">使用哪一些筆記<select id="quizScope"><option value="all">全部我的重點</option></select></label><button id="quizBtn" class="primary-btn">讓 AI 出題 →</button></div><div id="quizBox" hidden></div>
 
 <section class="quick-quiz-section" aria-labelledby="quickQuizTitle"><div class="quick-quiz-heading"><div><h2 id="quickQuizTitle">快問快答</h2></div></div><div class="quick-quiz-settings"><label>練習時間<select id="quickQuizMinutes"><option value="3">3 分鐘</option><option value="5" selected>5 分鐘</option><option value="10">10 分鐘</option><option value="15">15 分鐘</option></select></label><label>題數<select id="quickQuizCount"><option value="3">3 題</option><option value="5" selected>5 題</option><option value="8">8 題</option><option value="10">10 題</option></select></label><label>難度<select id="quickQuizDifficulty"><option>簡單</option><option selected>普通</option><option>困難</option></select></label><label class="quick-quiz-scope">使用哪一些筆記<select id="quickQuizScope"><option value="all">全部我的重點</option></select></label><button id="quickQuizBtn" class="primary-btn" type="button">開始限時挑戰</button></div><div id="quickQuizBox" hidden></div></section></section>
 
@@ -106,7 +106,7 @@
 </div>
 <div class="settings-grid">
   <section class="panel settings-card profile-card">
-    <div class="settings-card-head"><div><span class="section-kicker">PERSONAL PROFILE</span><h3>個人資料</h3></div></div>
+    <div class="settings-card-head"><div><h3>個人資料</h3></div></div>
     <div class="profile-layout">
       <div class="avatar-stage"><button id="avatarButton" class="profile-avatar avatar avatar-xl" type="button" title="更換頭像">E</button><input id="avatarInput" type="file" accept="image/png,image/jpeg,image/webp" hidden></div>
       <div class="profile-form">
@@ -117,7 +117,7 @@
     </div>
   </section>
   <section class="panel settings-card password-card">
-    <div class="settings-card-head"><div><span class="section-kicker">SECURITY</span><h3>密碼</h3></div></div>
+    <div class="settings-card-head"><div><h3>密碼</h3></div></div>
     <div class="password-form">
       <label class="settings-field">目前密碼<input id="currentPasswordInput" type="password" autocomplete="current-password" minlength="8"></label>
       <label class="settings-field">新密碼<input id="newPasswordInput" type="password" autocomplete="new-password" minlength="8"></label>
@@ -126,14 +126,14 @@
     </div>
   </section>
   <section class="panel settings-card theme-settings-card">
-    <div class="settings-card-head"><div><span class="section-kicker">APPEARANCE</span><h3>畫面主題</h3></div></div>
+    <div class="settings-card-head"><div><h3>畫面主題</h3></div></div>
     <div class="theme-options" role="group" aria-label="畫面主題">
       <button id="themeDarkBtn" class="theme-option" type="button" data-theme-choice="dark"><span class="theme-preview theme-preview-dark"></span><span><strong>深色</strong><small>深紫藍</small></span></button>
       <button id="themeLightBtn" class="theme-option" type="button" data-theme-choice="light"><span class="theme-preview theme-preview-light"></span><span><strong>黑白</strong><small>白底黑字</small></span></button>
     </div>
   </section>
   <section class="panel settings-card ai-settings-card">
-    <div class="settings-card-head"><div><span class="section-kicker">AI TEACHER</span><h3>AI 老師設定</h3></div></div>
+    <div class="settings-card-head"><div><h3>AI 老師設定</h3></div></div>
     <div class="ai-settings-grid">
       <label class="settings-field">教學風格<select id="aiStyleSelect"><option value="親切引導">親切引導</option><option value="條理清晰">條理清晰</option><option value="活潑有趣">活潑有趣</option><option value="考試導向">考試導向</option></select></label>
       <label class="settings-field">回答詳細程度<select id="aiDetailSelect"><option value="精簡">精簡</option><option value="適中">適中</option><option value="詳細">詳細</option></select></label>

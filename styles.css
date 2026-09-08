@@ -490,6 +490,8 @@ textarea{min-height:158px;padding:15px;resize:vertical;line-height:1.8}
 .quick-quiz-timer{min-width:92px;padding:10px 13px;border:1px solid rgba(99,215,255,.3);border-radius:12px;color:#dff6ff;background:rgba(99,215,255,.09);font-size:22px;font-weight:900;letter-spacing:.04em;text-align:center}
 .quick-quiz-timer.urgent{color:#ffd9df;border-color:rgba(255,119,142,.5);background:rgba(255,119,142,.13);animation:timerPulse 1s ease-in-out infinite}
 .quick-quiz-actions{display:flex;justify-content:flex-end;margin-top:16px}
+.quiz-settings-modern{border-color:rgba(143,146,255,.18);background:linear-gradient(135deg,rgba(143,146,255,.08),rgba(99,215,255,.025))}
+[data-theme="light"] .quiz-settings-modern{border-color:#d5d9e0;background:linear-gradient(135deg,#f0f2f5,#fafafb)}
 [data-theme="light"] .quick-quiz-settings{border-color:#d5d9e0;background:linear-gradient(135deg,#f0f2f5,#fafafb)}
 [data-theme="light"] .quick-quiz-settings label{color:#4c5563}
 [data-theme="light"] .quick-quiz-settings select{color:#181b21;background:#fff;border-color:#dbe0e7}
@@ -497,4 +499,5 @@ textarea{min-height:158px;padding:15px;resize:vertical;line-height:1.8}
 [data-theme="light"] .quick-quiz-timer.urgent{color:#a42f40;border-color:#e0adb6;background:#fceff1}
 @keyframes timerPulse{0%,100%{opacity:1}50%{opacity:.68}}
 @media(max-width:1120px){.quick-quiz-settings{grid-template-columns:1fr 1fr}.quick-quiz-scope{grid-column:1/-1}.quick-quiz-settings .primary-btn{grid-column:1/-1}}
+@media(min-width:641px) and (max-width:1120px){.content{padding-left:24px;padding-right:24px}.page-panel{padding:25px}.quiz-settings,.quiz-settings-modern{grid-template-columns:1fr 1fr}.quiz-settings .quiz-scope-label,.quiz-settings .primary-btn{grid-column:1/-1}.settings-grid{grid-template-columns:1fr}.settings-card{min-width:0}.ai-settings-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.profile-layout{grid-template-columns:112px minmax(0,1fr)}.notes-layout{grid-template-columns:230px minmax(0,1fr)}}
 @media(max-width:640px){.quick-quiz-section{margin-top:24px;padding-top:24px}.quick-quiz-heading h2{font-size:22px}.quick-quiz-settings{grid-template-columns:1fr}.quick-quiz-scope,.quick-quiz-settings .primary-btn{grid-column:auto}.quick-quiz-actions .primary-btn{width:100%}.quick-quiz-timer{min-width:86px;font-size:19px}}
